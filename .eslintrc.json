@@ -1,0 +1,6 @@
+{
+   "extends": "laxarjs",
+   "parserOptions": {
+      "ecmaVersion": 8
+   }
+}

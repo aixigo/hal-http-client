@@ -2,6 +2,8 @@
 
 ## Last Changes
 
+## v0.4.0
+
 - [#5](https://github.com/alex3683/hal-http-client/issues/5): using correct body field
 
 

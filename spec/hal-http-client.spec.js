@@ -338,20 +338,20 @@ describe( 'A hal client instance', () => {
             } );
          } );
 
-         //////////////////////////////////////////////////////////////////////////////////////////////////
+         /////////////////////////////////////////////////////////////////////////////////////////////////////
 
          it( 'calls the configured response transformer', () => {
             expect( responseTransformerSpy ).toHaveBeenCalled();
          } );
 
-         //////////////////////////////////////////////////////////////////////////////////////////////////
+         /////////////////////////////////////////////////////////////////////////////////////////////////////
 
          it( 'resolves the simple promise', () => {
             expect( thenResolvedSpy ).toHaveBeenCalled();
             expect( thenRejectedSpy ).not.toHaveBeenCalled();
          } );
 
-         //////////////////////////////////////////////////////////////////////////////////////////////////
+         /////////////////////////////////////////////////////////////////////////////////////////////////////
 
          it( 'calls the most specific matching on handler', () => {
             expect( onSpy200 ).toHaveBeenCalled();
@@ -360,7 +360,7 @@ describe( 'A hal client instance', () => {
             expect( onSpy5xxGlobal ).not.toHaveBeenCalled();
          } );
 
-         //////////////////////////////////////////////////////////////////////////////////////////////////
+         /////////////////////////////////////////////////////////////////////////////////////////////////////
 
          it( 'sends default unsafe, global and local headers along', () => {
             expect( fetchMock.lastOptions().headers ).toEqual( {
@@ -371,11 +371,11 @@ describe( 'A hal client instance', () => {
             } );
          } );
 
-         //////////////////////////////////////////////////////////////////////////////////////////////////
+         /////////////////////////////////////////////////////////////////////////////////////////////////////
 
          if( method !== 'DELETE' ) {
             it( 'sends the data as request body', () => {
-               expect( fetchMock.lastOptions().data ).toEqual( { my: 'data' } );
+               expect( fetchMock.lastOptions().body ).toEqual( { my: 'data' } );
             } );
          }
 
@@ -401,7 +401,7 @@ describe( 'A hal client instance', () => {
          spyOn( hal, 'follow' ).and.callThrough();
       } );
 
-      /////////////////////////////////////////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
       it( 'takes resources from the representation if already embedded', async () => {
          await hal.follow( rootHalResource, 'address' ).then( thenResolvedSpy, thenRejectedSpy );
@@ -410,7 +410,7 @@ describe( 'A hal client instance', () => {
          expect( thenResolvedSpy ).toHaveBeenCalledWith( jasmine.objectContaining( { status: 200 } ) );
       } );
 
-      /////////////////////////////////////////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
       it( 'calls the most specific matching on handler', async () => {
          await hal.follow( rootHalResource, 'address' ).on( {
@@ -426,7 +426,7 @@ describe( 'A hal client instance', () => {
          expect( onSpy5xxGlobal ).not.toHaveBeenCalled();
       } );
 
-      /////////////////////////////////////////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
       it( 'makes a GET request for a resource that is not embedded', async () => {
          await hal.follow( rootHalResource, 'cars' ).then( thenResolvedSpy, thenRejectedSpy );
@@ -435,7 +435,7 @@ describe( 'A hal client instance', () => {
          expect( thenResolvedSpy ).toHaveBeenCalledWith( jasmine.objectContaining( { status: 200 } ) );
       } );
 
-      /////////////////////////////////////////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
       it( 'follows a complete collection if followAll is true', async () => {
          await hal.follow( rootHalResource, 'car', { followAll: true } )
@@ -449,7 +449,7 @@ describe( 'A hal client instance', () => {
          expect( callArgs[ 1 ].status ).toEqual( 200 );
       } );
 
-      /////////////////////////////////////////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
       it( 'follows a complete collection if followAll is true although there is only one link', async () => {
          await hal.follow( rootHalResource, 'pet', { followAll: true } )
@@ -461,7 +461,7 @@ describe( 'A hal client instance', () => {
          expect( callArgs[ 0 ].status ).toEqual( 200 );
       } );
 
-      /////////////////////////////////////////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
       it( 'defines followAll as shortcut for follow with followAll being true', async () => {
          await hal.followAll( rootHalResource, 'pet', { headers: { 'X-More-Headers': 'yay' } } )
@@ -478,7 +478,7 @@ describe( 'A hal client instance', () => {
          expect( callArgs[ 0 ].status ).toEqual( 200 );
       } );
 
-      /////////////////////////////////////////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
       it( 'can follow a set of embedded resources', async () => {
          await hal.followAll( data.CARS, 'car' ).then( thenResolvedSpy, thenRejectedSpy );
@@ -490,7 +490,7 @@ describe( 'A hal client instance', () => {
          expect( callArgs[ 1 ].status ).toEqual( 200 );
       } );
 
-      /////////////////////////////////////////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
       it( 'can follow a set of embedded resources although there is only one element embedded', async () => {
          const carData = data.CARS;
@@ -501,7 +501,7 @@ describe( 'A hal client instance', () => {
          expect( callArgs[ 0 ].status ).toEqual( 200 );
       } );
 
-      /////////////////////////////////////////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
       // eslint-disable-next-line max-len
       it( 'can follow an empty set of embedded resources and passes an empty list of responses with overall status 200', async () => {
@@ -518,7 +518,7 @@ describe( 'A hal client instance', () => {
          expect( onSpyXxx ).not.toHaveBeenCalled();
       } );
 
-      /////////////////////////////////////////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
       it( 'calls a matching on handler if the status codes of all responses are the same', async () => {
          await hal.followAll( rootHalResource, 'car' ).on( {
@@ -537,7 +537,7 @@ describe( 'A hal client instance', () => {
          expect( responses[ 1 ].status ).toEqual( 200 );
       } );
 
-      /////////////////////////////////////////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
       it( 'calls xxx handler if the status codes of some responses are different', async () => {
          rootHalResource._links.car.push( { href: url( '/me/cars/2' ) } );
@@ -562,7 +562,7 @@ describe( 'A hal client instance', () => {
          expect( values[ 2 ] ).toEqual( null );
       } );
 
-      /////////////////////////////////////////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
       it( 'has a utility function to create a simple follow handler', async () => {
          const addressFollower = hal.thenFollow( 'address' );
@@ -576,7 +576,7 @@ describe( 'A hal client instance', () => {
          expect( value ).toEqual( rootHalResource._embedded.address );
       } );
 
-      /////////////////////////////////////////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
       it( 'has a utility function to create a simple followAll handler', async () => {
          const carFollower = hal.thenFollowAll( 'car' );
@@ -593,7 +593,7 @@ describe( 'A hal client instance', () => {
          expect( values[ 1 ] ).toEqual( data.CARS._embedded.car[ 1 ] );
       } );
 
-      /////////////////////////////////////////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
       it( 'supports following simple path fragment templated URIs', async () => {
          fetchMock.get( url( '/me/carsByType/VW' ), { status: 200, body: {} } );
@@ -606,7 +606,7 @@ describe( 'A hal client instance', () => {
          expect( fetchMock.called( url( '/me/carsByType/VW' ) ) ).toBe( true );
       } );
 
-      /////////////////////////////////////////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
       it( 'supports following simple query string templated URIs', async () => {
          fetchMock.get( url( '/me/carsByModel?model=DeLorean' ), { status: 200, body: {} } );
@@ -620,7 +620,7 @@ describe( 'A hal client instance', () => {
          expect( fetchMock.called( url( '/me/carsByModel?model=DeLorean' ) ) ).toBe( true );
       } );
 
-      /////////////////////////////////////////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
       it( 'supports following simple query and query continuation string templated URIs', async () => {
          fetchMock.get( url( '/me/carsByTypeAndModel?type=VW&model=DeLorean' ), { status: 404 } );
@@ -635,7 +635,7 @@ describe( 'A hal client instance', () => {
          expect( fetchMock.called( url( '/me/carsByTypeAndModel?type=VW&model=DeLorean' ) ) ).toBe( true );
       } );
 
-      /////////////////////////////////////////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
       it( 'URI encodes simple query and query continuation string templated URIs', async () => {
          fetchMock
@@ -666,7 +666,7 @@ describe( 'A hal client instance', () => {
          hal = halHttp.create( { queueUnsafeRequests: true } );
       } );
 
-      /////////////////////////////////////////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
       it( 'only starts the next request if the previous was fulfilled', async () => {
          const firstRequest = hal.post( 'first', {} );
@@ -680,7 +680,7 @@ describe( 'A hal client instance', () => {
          expect( fetchMock.called( 'second' ) ).toBe( true );
       } );
 
-      /////////////////////////////////////////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
       it( 'only starts the next request if the previous was rejected', async () => {
          const firstRequest = hal.post( 'firstFails', {} );

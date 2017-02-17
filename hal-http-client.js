@@ -454,7 +454,7 @@ export function create( optionalOptions = {} ) {
          headers: createHeaders( method, options.headers )
       };
       if( optionalData ) {
-         req.data = optionalData;
+         req.body = optionalData;
       }
 
       if( globalOptions.queueUnsafeRequests === true ) {

@@ -2,10 +2,11 @@
   "name": "hal-http-client",
   "version": "0.2.0-pre",
   "description": "A status code driven JSON HAL HTTP client based on the fetch API.",
-  "main": "hal-http-client.js",
+  "main": "dist/hal-http-client.js",
   "scripts": {
     "test": "jasmine",
-    "test-watch": "watch \"npm test\" . --wait=1 -p /node_modules/"
+    "test-watch": "watch \"npm test\" . --wait=1 -p /node_modules/",
+    "install": "babel -d dist hal-http-client.js"
   },
   "repository": {
     "type": "git",
@@ -24,6 +25,10 @@
   "author": "Alexander Wilden",
   "license": "MIT",
   "devDependencies": {
+    "babel-cli": "^6.23.0",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.23.0",
+    "babel-plugin-transform-object-rest-spread": "^6.23.0",
+    "babel-preset-es2017": "^6.22.0",
     "eslint": "^3.15.0",
     "eslint-config-laxarjs": "^0.3.0",
     "fetch-mock": "^5.9.3",

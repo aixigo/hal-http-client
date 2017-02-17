@@ -14,11 +14,12 @@
   "homepage": "https://github.com/alex3683/hal-http-client",
   "bugs": "https://github.com/alex3683/hal-http-client/issues",
   "keywords": [
+    "fetch",
     "hal",
     "http",
-    "fetch",
-    "rest",
-    "hypermedia"
+    "hypermedia",
+    "json",
+    "rest"
   ],
   "author": "Alexander Wilden",
   "license": "MIT",

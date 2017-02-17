@@ -6,7 +6,7 @@
   "scripts": {
     "test": "jasmine",
     "test-watch": "watch \"npm test\" . --wait=1 -p /node_modules/",
-    "install": "babel -d dist hal-http-client.js"
+    "prepublish": "babel -d dist hal-http-client.js"
   },
   "repository": {
     "type": "git",

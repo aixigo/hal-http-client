@@ -2,6 +2,8 @@
 
 ## Last Changes
 
+## v0.5.0
+
 - [#7](https://github.com/alex3683/hal-http-client/issues/7): added support for specifying fetch options
 - [#6](https://github.com/alex3683/hal-http-client/issues/6): added missing body JSON stringify
 

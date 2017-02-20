@@ -374,8 +374,8 @@ describe( 'A hal client instance', () => {
          /////////////////////////////////////////////////////////////////////////////////////////////////////
 
          if( method !== 'DELETE' ) {
-            it( 'sends the data as request body', () => {
-               expect( fetchMock.lastOptions().body ).toEqual( { my: 'data' } );
+            it( 'sends the data as stringified request body', () => {
+               expect( fetchMock.lastOptions().body ).toEqual( JSON.stringify( { my: 'data' } ) );
             } );
          }
 

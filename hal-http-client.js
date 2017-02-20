@@ -7,7 +7,7 @@
  * Default headers used with safe http methods.
  */
 const DEFAULT_SAFE_HEADERS = {
-   Accept: 'application/hal+json'
+   'accept': 'application/hal+json'
 };
 
 /**
@@ -15,7 +15,7 @@ const DEFAULT_SAFE_HEADERS = {
  */
 const DEFAULT_UNSAFE_HEADERS = {
    ...DEFAULT_SAFE_HEADERS,
-   'Content-Type': 'application/json'
+   'content-type': 'application/json'
 };
 
 /**
@@ -23,7 +23,7 @@ const DEFAULT_UNSAFE_HEADERS = {
  */
 const DEFAULT_PATCH_HEADERS = {
    ...DEFAULT_SAFE_HEADERS,
-   'Content-Type': 'application/json-patch+json'
+   'content-type': 'application/json-patch+json'
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -66,6 +66,10 @@ const DEFAULT_PATCH_HEADERS = {
  *    if `true` an unsafe request has to be finished before the next is started. Default is `false`
  * @param {Object} [optionalOptions.headers]
  *    global headers to send along with every request
+ * @param {Object} [optionalOptions.fetchInit]
+ *    additional init options for `fetch` to be used with every request. The keys `headers`, `body` and
+ *    `method` are ignored from this option, since they are either parameters on their own or implemented as
+ *    specific function.
  * @param {Object} [optionalOptions.on]
  *    global `on` handlers to use as fallback if no matching handler was found in an `on` call
  * @param {Function} [optionalOptions.responseTransformer]
@@ -85,6 +89,7 @@ export function create( optionalOptions = {} ) {
    const globalOptions = {
       queueUnsafeRequests: false,
       headers: {},
+      fetchInit: {},
       on: {},
       responseTransformer: response => response,
       logError: msg => { console.error( msg ); }, // eslint-disable-line no-console
@@ -107,6 +112,10 @@ export function create( optionalOptions = {} ) {
     * @param {Object} [optionalOptions.headers]
     *    headers to send along with the request. By default `Accept: application/hal+json` is added to
     *    the headers
+    * @param {Object} [optionalOptions.fetchInit]
+    *    additional init options for `fetch` to be used for this request only. The keys `headers`, `body` and
+    *    `method` are ignored from this option, since they are either parameters on their own or implemented
+    *    as specific function.
     *
     * @return {Promise}
     *    a promise for the response enriched by an `on` function (see `create()`)
@@ -115,16 +124,16 @@ export function create( optionalOptions = {} ) {
       const url = extractUrl( urlOrHalRepresentation );
       const options = {
          headers: {},
+         fetchInit: {},
          ...optionalOptions
       };
-      const headers = createHeaders( 'GET', options.headers );
 
-      const cacheKey = createCacheKey( url, headers );
+      const cacheKey = createCacheKey( url, createHeaders( 'GET', options.headers ) );
       if( cacheKey in getPromiseCache ) {
          return getPromiseCache[ cacheKey ];
       }
 
-      const promise = fetch( url, { headers } )
+      const promise = doFetch( url, options )
          .then( response => globalOptions.responseTransformer( response ) );
 
       const removeFromCache = () => { delete getPromiseCache[ cacheKey ]; };
@@ -147,6 +156,10 @@ export function create( optionalOptions = {} ) {
     *    configuration to use for the request
     * @param {Object} [optionalOptions.headers]
     *    headers to send along with the request. By default no headers are set
+    * @param {Object} [optionalOptions.fetchInit]
+    *    additional init options for `fetch` to be used for this request only. The keys `headers`, `body` and
+    *    `method` are ignored from this option, since they are either parameters on their own or implemented
+    *    as specific function.
     *
     * @return {Promise}
     *    a promise for the response enriched by an `on` function (see `create()`)
@@ -155,10 +168,11 @@ export function create( optionalOptions = {} ) {
       const url = extractUrl( urlOrHalRepresentation );
       const options = {
          headers: {},
+         fetchInit: {},
          ...optionalOptions
       };
 
-      return extendResponsePromise( fetch( url, { method: 'HEAD', headers: options.headers } ) );
+      return extendResponsePromise( doFetch( url, options, 'HEAD' ) );
    }
 
    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -176,6 +190,10 @@ export function create( optionalOptions = {} ) {
     * @param {Object} [optionalOptions.headers]
     *    headers to send along with the request. By default `Accept: application/hal+json` and
     *    `Content-Type: application/json` are added to the headers
+    * @param {Object} [optionalOptions.fetchInit]
+    *    additional init options for `fetch` to be used for this request only. The keys `headers`, `body` and
+    *    `method` are ignored from this option, since they are either parameters on their own or implemented
+    *    as specific function.
     *
     * @return {Promise}
     *    a promise for the response enriched by an `on` function (see `create()`)
@@ -199,6 +217,10 @@ export function create( optionalOptions = {} ) {
     * @param {Object} [optionalOptions.headers]
     *    headers to send along with the request. By default `Accept: application/hal+json` and
     *    `Content-Type: application/json` are added to the headers
+    * @param {Object} [optionalOptions.fetchInit]
+    *    additional init options for `fetch` to be used for this request only. The keys `headers`, `body` and
+    *    `method` are ignored from this option, since they are either parameters on their own or implemented
+    *    as specific function.
     *
     * @return {Promise}
     *    a promise for the response enriched by an `on` function (see `create()`)
@@ -222,6 +244,10 @@ export function create( optionalOptions = {} ) {
     * @param {Object} [optionalOptions.headers]
     *    headers to send along with the request. By default `Accept: application/hal+json` and
     *    `Content-Type: application/json-patch+json` are added to the headers
+    * @param {Object} [optionalOptions.fetchInit]
+    *    additional init options for `fetch` to be used for this request only. The keys `headers`, `body` and
+    *    `method` are ignored from this option, since they are either parameters on their own or implemented
+    *    as specific function.
     *
     * @return {Promise}
     *    a promise for the response enriched by an `on` function (see `create()`)
@@ -243,6 +269,10 @@ export function create( optionalOptions = {} ) {
     * @param {Object} [optionalOptions.headers]
     *    headers to send along with the request. By default `Accept: application/hal+json` and
     *    `Content-Type: application/json` are added to the headers
+    * @param {Object} [optionalOptions.fetchInit]
+    *    additional init options for `fetch` to be used for this request only. The keys `headers`, `body` and
+    *    `method` are ignored from this option, since they are either parameters on their own or implemented
+    *    as specific function.
     *
     * @return {Promise}
     *    a promise for the response enriched by an `on` function (see `create()`)
@@ -276,6 +306,10 @@ export function create( optionalOptions = {} ) {
     *    configuration to use for the request
     * @param {Object} [optionalOptions.headers]
     *    headers to send along with the request. The same default headers as for `get()` are used
+    * @param {Object} [optionalOptions.fetchInit]
+    *    additional init options for `fetch` to be used for this request only. The keys `headers`, `body` and
+    *    `method` are ignored from this option, since they are either parameters on their own or implemented
+    *    as specific function.
     * @param {Boolean} [optionalOptions.followAll]
     *    if `true`, follows all entities found for that relation. Default is `false`
     *
@@ -286,6 +320,7 @@ export function create( optionalOptions = {} ) {
       const options = {
          followAll: false,
          headers: {},
+         fetchInit: {},
          vars: {},
          ...optionalOptions
       };
@@ -314,17 +349,18 @@ export function create( optionalOptions = {} ) {
          }
          else if( '_links' in halRepresentation && relation in halRepresentation._links ) {
             const linkOrLinks = halRepresentation._links[ relation ];
+            const getOptions = { headers: options.headers, fetchInit: options.fetchInit };
             if( options.followAll ) {
                const links = Array.isArray( linkOrLinks ) ? linkOrLinks : [ linkOrLinks ];
                allSettled( links.map( link => {
                   const href = expandPossibleVars( link, options.vars );
-                  return get( href, { headers: options.headers } );
+                  return get( href, getOptions);
                } ) ).then( resolve, reject );
             }
             else {
                const link = Array.isArray( linkOrLinks ) ? linkOrLinks[ 0 ] : linkOrLinks;
                const href = expandPossibleVars( link, options.vars );
-               get( href, { headers: options.headers } ).then( resolve, reject );
+               get( href, getOptions ).then( resolve, reject );
             }
          }
          else {
@@ -352,6 +388,10 @@ export function create( optionalOptions = {} ) {
     *    configuration to use for the request
     * @param {Object} [optionalOptions.headers]
     *    headers to send along with the request. The same default headers as for `get()` are used
+    * @param {Object} [optionalOptions.fetchInit]
+    *    additional init options for `fetch` to be used for this request only. The keys `headers`, `body` and
+    *    `method` are ignored from this option, since they are either parameters on their own or implemented
+    *    as specific function.
     *
     * @return {Promise}
     *    a promise for the response enriched by an `on` function (see `create()`)
@@ -390,6 +430,10 @@ export function create( optionalOptions = {} ) {
     *    configuration to use for the request
     * @param {Object} [optionalOptions.headers]
     *    headers to send along with the request. The same default headers as for `get()` are used
+    * @param {Object} [optionalOptions.fetchInit]
+    *    additional init options for `fetch` to be used for this request only. The keys `headers`, `body` and
+    *    `method` are ignored from this option, since they are either parameters on their own or implemented
+    *    as specific function.
     * @param {Boolean} [optionalOptions.followAll]
     *    if `true`, follows all entities found for that relation. Default is `false`
     *
@@ -413,6 +457,10 @@ export function create( optionalOptions = {} ) {
     *    configuration to use for the request
     * @param {Object} [optionalOptions.headers]
     *    headers to send along with the request. The same default headers as for `get()` are used
+    * @param {Object} [optionalOptions.fetchInit]
+    *    additional init options for `fetch` to be used for this request only. The keys `headers`, `body` and
+    *    `method` are ignored from this option, since they are either parameters on their own or implemented
+    *    as specific function.
     *
     * @return {Function}
     *    a function calling `followAll` on the response it receives
@@ -425,37 +473,14 @@ export function create( optionalOptions = {} ) {
 
    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-   function createHeaders( method, additional ) {
-      let defaultHeaders = DEFAULT_UNSAFE_HEADERS;
-      if( method === 'GET' ) {
-         defaultHeaders = DEFAULT_SAFE_HEADERS;
-      }
-      else if( method === 'PATCH' ) {
-         defaultHeaders = DEFAULT_PATCH_HEADERS;
-      }
-      return {
-         ...{ ...defaultHeaders, ...globalOptions.headers },
-         ...additional
-      };
-   }
-
-   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-
    let continuationPromise;
    function unsafeRequest( method, urlOrHalRepresentation, optionalOptions = {}, optionalData = {} ) {
       const url = extractUrl( urlOrHalRepresentation );
       const options = {
-         ...{ headers: {} },
+         headers: {},
+         fetchInit: {},
          ...optionalOptions
       };
-
-      const req = {
-         method,
-         headers: createHeaders( method, options.headers )
-      };
-      if( optionalData ) {
-         req.body = JSON.stringify( optionalData );
-      }
 
       if( globalOptions.queueUnsafeRequests === true ) {
          continuationPromise = continuationPromise ? continuationPromise.then( next, next ) : next();
@@ -467,7 +492,7 @@ export function create( optionalOptions = {} ) {
       ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
       function next() {
-         return fetch( url, req ).then(
+         return doFetch( url, options, method, optionalData ).then(
             response => globalOptions.responseTransformer( response ),
             response => Promise.reject( globalOptions.responseTransformer( response ) )
          );
@@ -675,6 +700,46 @@ export function create( optionalOptions = {} ) {
          ( acc, key, index ) => `${acc}${index ? '_' : ''}${key}=${headers[ key ]}`,
          `${url}@`
       );
+   }
+
+   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+   function doFetch( url, options, method = 'GET', bodyObject = undefined ) {
+      const headers = createHeaders( method, options.headers );
+      const lcHeaders = {};
+      Object.keys( headers ).forEach( key => {
+         lcHeaders[ key.toLowerCase() ] = headers[ key ];
+      } );
+      return fetch( url, createInit( options.fetchInit, method, lcHeaders, bodyObject ) );
+   }
+
+   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+   function createInit( localInit, method, headers, bodyObject ) {
+      const config = {
+         ...globalOptions.fetchInit,
+         ...localInit,
+         method,
+         headers
+      };
+      delete config.body;
+      if( bodyObject !== undefined ) {
+         config.body = JSON.stringify( bodyObject );
+      }
+      return config;
+   }
+
+   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+   function createHeaders( method, localHeaders ) {
+      let defaultHeaders = DEFAULT_UNSAFE_HEADERS;
+      if( method === 'GET' ) {
+         defaultHeaders = DEFAULT_SAFE_HEADERS;
+      }
+      else if( method === 'PATCH' ) {
+         defaultHeaders = DEFAULT_PATCH_HEADERS;
+      }
+      return { ...defaultHeaders, ...globalOptions.headers, ...localHeaders };
    }
 
    ///////////////////////////////////////////////////////////////////////////////////////////////////////////

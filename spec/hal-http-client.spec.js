@@ -97,9 +97,12 @@ describe( 'A hal client instance', () => {
       responseTransformerSpy = jasmine.createSpy( 'responseTransformerSpy' ).and.callFake( _ => _ );
 
       hal = halHttp.create( {
-         headers: { 'Accept-Language': 'de' },
+         headers: { 'accept-language': 'de' },
          on: { '5xx': onSpy5xxGlobal },
-         responseTransformer: responseTransformerSpy
+         responseTransformer: responseTransformerSpy,
+         fetchInit: {
+            mode: 'cors'
+         }
       } );
    } );
 
@@ -120,7 +123,10 @@ describe( 'A hal client instance', () => {
 
          const promise = hal.get( url( '/resource' ), {
             headers: {
-               'X-Custom-Header': 'such header'
+               'x-custom-header': 'such header'
+            },
+            fetchInit: {
+               cache: 'no-store'
             }
          } );
          promise.then( thenResolvedSpy, thenRejectedSpy );
@@ -157,10 +163,17 @@ describe( 'A hal client instance', () => {
 
       it( 'sends default safe, global and local headers along', () => {
          expect( fetchMock.lastOptions().headers ).toEqual( {
-            'Accept': 'application/hal+json',
-            'Accept-Language': 'de',
-            'X-Custom-Header': 'such header'
+            'accept': 'application/hal+json',
+            'accept-language': 'de',
+            'x-custom-header': 'such header'
          } );
+      } );
+
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+      it( 'passes additional fetch init config to fetch', () => {
+         expect( fetchMock.lastOptions().mode ).toEqual( 'cors' );
+         expect( fetchMock.lastOptions().cache ).toEqual( 'no-store' );
       } );
 
    } );
@@ -325,7 +338,10 @@ describe( 'A hal client instance', () => {
          beforeEach( async () => {
             fetchMock.mock( url( '/resource' ), { status: 200 }, { method } );
 
-            const options = { headers: { 'X-Custom-Header': 'such header' } };
+            const options = {
+               headers: { 'X-Custom-Header': 'such header' },
+               fetchInit: { cache: 'reload' }
+            };
             const promise = method === 'DELETE' ?
                hal[ method.toLowerCase() ]( url( '/resource' ), options ) :
                hal[ method.toLowerCase() ]( url( '/resource' ), { my: 'data' }, options );
@@ -364,11 +380,18 @@ describe( 'A hal client instance', () => {
 
          it( 'sends default unsafe, global and local headers along', () => {
             expect( fetchMock.lastOptions().headers ).toEqual( {
-               'Accept': 'application/hal+json',
-               'Accept-Language': 'de',
-               'Content-Type': method === 'PATCH' ? 'application/json-patch+json' : 'application/json',
-               'X-Custom-Header': 'such header'
+               'accept': 'application/hal+json',
+               'accept-language': 'de',
+               'content-type': method === 'PATCH' ? 'application/json-patch+json' : 'application/json',
+               'x-custom-header': 'such header'
             } );
+         } );
+
+         /////////////////////////////////////////////////////////////////////////////////////////////////////
+
+         it( 'passes additional fetch init config to fetch', () => {
+            expect( fetchMock.lastOptions().mode ).toEqual( 'cors' );
+            expect( fetchMock.lastOptions().cache ).toEqual( 'reload' );
          } );
 
          /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -469,9 +492,9 @@ describe( 'A hal client instance', () => {
 
          expect( fetchMock.called( url( '/me/pets/0' ) ) ).toBe( true );
          expect( fetchMock.lastOptions( url( '/me/pets/0' ) ).headers ).toEqual( {
-            Accept: 'application/hal+json',
-            'Accept-Language': 'de',
-            'X-More-Headers': 'yay'
+            'accept': 'application/hal+json',
+            'accept-language': 'de',
+            'x-more-headers': 'yay'
          } );
 
          const [ callArgs ] = thenResolvedSpy.calls.argsFor( 0 );

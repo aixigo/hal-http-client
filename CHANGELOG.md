@@ -2,6 +2,9 @@
 
 ## Last Changes
 
+
+## v0.6.0
+
 - [#8](https://github.com/alex3683/hal-http-client/issues/8): improved dist version output
 
 

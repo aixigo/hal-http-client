@@ -1,6 +1,6 @@
 {
   "name": "hal-http-client",
-  "version": "0.6.0",
+  "version": "0.7.0-pre",
   "description": "A status code driven JSON HAL HTTP client based on the fetch API.",
   "main": "dist/hal-http-client.js",
   "scripts": {

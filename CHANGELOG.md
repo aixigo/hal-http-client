@@ -2,6 +2,9 @@
 
 ## Last Changes
 
+- [#8](https://github.com/alex3683/hal-http-client/issues/8): improved dist version output
+
+
 ## v0.5.0
 
 - [#7](https://github.com/alex3683/hal-http-client/issues/7): added support for specifying fetch options

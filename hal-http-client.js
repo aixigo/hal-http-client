@@ -441,8 +441,8 @@ export function create( optionalOptions = {} ) {
     *    a function calling `follow` on the response it receives
     */
    function thenFollow( relation, optionalOptions ) {
-      return function( response ) {
-         return follow( response.data, relation, optionalOptions );
+      return function( data ) {
+         return follow( data, relation, optionalOptions );
       };
    }
 
@@ -466,8 +466,8 @@ export function create( optionalOptions = {} ) {
     *    a function calling `followAll` on the response it receives
     */
    function thenFollowAll( relation, optionalOptions ) {
-      return function( response ) {
-         return followAll( response.data, relation, optionalOptions );
+      return function( data ) {
+         return followAll( data, relation, optionalOptions );
       };
    }
 

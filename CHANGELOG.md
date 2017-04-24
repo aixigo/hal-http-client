@@ -2,6 +2,8 @@
 
 ## Last Changes
 
+- [#9](https://github.com/alex3683/hal-http-client/issues/9): fixed argument bug in `thenFollow` and `thenFollowAll`
+
 
 ## v0.6.0
 

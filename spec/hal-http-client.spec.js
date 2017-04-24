@@ -590,8 +590,8 @@ describe( 'A hal client instance', () => {
       it( 'has a utility function to create a simple follow handler', async () => {
          const addressFollower = hal.thenFollow( 'address' );
 
-         await addressFollower( { data: rootHalResource } ).then( thenResolvedSpy, thenRejectedSpy );
-         await addressFollower( { data: rootHalResource } ).on( { '200': onSpy200 } );
+         await addressFollower( rootHalResource ).then( thenResolvedSpy, thenRejectedSpy );
+         await addressFollower( rootHalResource ).on( { '200': onSpy200 } );
 
          expect( thenResolvedSpy ).toHaveBeenCalledWith( jasmine.objectContaining( { status: 200 } ) );
 
@@ -604,8 +604,8 @@ describe( 'A hal client instance', () => {
       it( 'has a utility function to create a simple followAll handler', async () => {
          const carFollower = hal.thenFollowAll( 'car' );
 
-         await carFollower( { data: rootHalResource } ).then( thenResolvedSpy, thenRejectedSpy );
-         await carFollower( { data: rootHalResource } ).on( { '200': onSpy200 } );
+         await carFollower( rootHalResource ).then( thenResolvedSpy, thenRejectedSpy );
+         await carFollower( rootHalResource ).on( { '200': onSpy200 } );
 
          const [ callArgs ] = thenResolvedSpy.calls.argsFor( 0 );
          expect( callArgs[ 0 ].status ).toEqual( 200 );

@@ -6,7 +6,8 @@
   "scripts": {
     "test": "jasmine",
     "test-watch": "watch \"npm test\" . --wait=1 -p /node_modules/",
-    "prepublish": "babel -d dist hal-http-client.js"
+    "prepublish": "babel -d dist hal-http-client.js",
+    "apidoc": "laxar-dox -d docs/api hal-http-client.js"
   },
   "repository": {
     "type": "git",
@@ -36,6 +37,7 @@
     "fetch-mock": "^5.9.3",
     "jasmine": "^2.5.3",
     "jasmine-es6": "^0.4.0",
+    "laxar-dox": "^2.0.0-rc.0",
     "watch": "^1.0.1"
   }
 }

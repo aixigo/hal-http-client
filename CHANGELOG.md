@@ -2,6 +2,8 @@
 
 ## Last Changes
 
+- [#3](https://github.com/alex3683/hal-http-client/issues/3): added API doc
+
 
 ## v0.6.1
 

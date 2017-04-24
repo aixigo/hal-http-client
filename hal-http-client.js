@@ -4,7 +4,14 @@
  * http://laxarjs.org/license
  */
 /**
+ * @module hal-http-client
+ */
+
+/**
  * Default headers used with safe http methods.
+ *
+ * @type {Object}
+ * @private
  */
 const DEFAULT_SAFE_HEADERS = {
    'accept': 'application/hal+json'
@@ -12,6 +19,9 @@ const DEFAULT_SAFE_HEADERS = {
 
 /**
  * Default headers used with unsafe http methods.
+ *
+ * @type {Object}
+ * @private
  */
 const DEFAULT_UNSAFE_HEADERS = {
    ...DEFAULT_SAFE_HEADERS,
@@ -20,6 +30,9 @@ const DEFAULT_UNSAFE_HEADERS = {
 
 /**
  * Default headers used with the PATCH http methods.
+ *
+ * @type {Object}
+ * @private
  */
 const DEFAULT_PATCH_HEADERS = {
    ...DEFAULT_SAFE_HEADERS,
@@ -45,10 +58,10 @@ const DEFAULT_PATCH_HEADERS = {
  * ```javascript
  * halClient.get( 'http://host/someResource' )
  *    .on( {
- *       '2xx': function( response ) {
+ *       '2xx'( response ) {
  *          console.log( 'Everything looks fine: ', response.data );
  *       },
- *       '4xx|5xx': function( response ) {
+ *       '4xx|5xx'( response ) {
  *          console.log( 'Server or client failed. Who knows? The status!', response.status );
  *       }
  *    } );
@@ -80,7 +93,7 @@ const DEFAULT_PATCH_HEADERS = {
  * @param {Function} [optionalOptions.logDebug]
  *    a function to log debug / development messages to. By default `console.debug` is used
  *
- * @return {Object}
+ * @return {HalHttpClient}
  *    a new hal client instance
  */
 export function create( optionalOptions = {} ) {
@@ -98,6 +111,24 @@ export function create( optionalOptions = {} ) {
    };
    const { logError, logDebug } = globalOptions;
    const globalOnHandlers = expandHandlers( globalOptions.on );
+
+   /**
+    * @constructor
+    * @name HalHttpClient
+    */
+   const api = {
+      get,
+      head,
+      put,
+      post,
+      patch,
+      del,
+      delete: del,
+      follow,
+      followAll,
+      thenFollow,
+      thenFollowAll
+   };
 
    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -119,6 +150,8 @@ export function create( optionalOptions = {} ) {
     *
     * @return {Promise}
     *    a promise for the response enriched by an `on` function (see `create()`)
+    *
+    * @memberof HalHttpClient
     */
    function get( urlOrHalRepresentation, optionalOptions ) {
       const url = extractUrl( urlOrHalRepresentation );
@@ -163,6 +196,8 @@ export function create( optionalOptions = {} ) {
     *
     * @return {Promise}
     *    a promise for the response enriched by an `on` function (see `create()`)
+    *
+    * @memberof HalHttpClient
     */
    function head( urlOrHalRepresentation, optionalOptions ) {
       const url = extractUrl( urlOrHalRepresentation );
@@ -197,6 +232,8 @@ export function create( optionalOptions = {} ) {
     *
     * @return {Promise}
     *    a promise for the response enriched by an `on` function (see `create()`)
+    *
+    * @memberof HalHttpClient
     */
    function put( urlOrHalRepresentation, data, optionalOptions ) {
       return unsafeRequest( 'PUT', urlOrHalRepresentation, optionalOptions, data );
@@ -224,6 +261,8 @@ export function create( optionalOptions = {} ) {
     *
     * @return {Promise}
     *    a promise for the response enriched by an `on` function (see `create()`)
+    *
+    * @memberof HalHttpClient
     */
    function post( urlOrHalRepresentation, data, optionalOptions ) {
       return unsafeRequest( 'POST', urlOrHalRepresentation, optionalOptions, data );
@@ -251,6 +290,8 @@ export function create( optionalOptions = {} ) {
     *
     * @return {Promise}
     *    a promise for the response enriched by an `on` function (see `create()`)
+    *
+    * @memberof HalHttpClient
     */
    function patch( urlOrHalRepresentation, data, optionalOptions ) {
       return unsafeRequest( 'PATCH', urlOrHalRepresentation, optionalOptions, data );
@@ -276,6 +317,8 @@ export function create( optionalOptions = {} ) {
     *
     * @return {Promise}
     *    a promise for the response enriched by an `on` function (see `create()`)
+    *
+    * @memberof HalHttpClient
     */
    function del( urlOrHalRepresentation, optionalOptions ) {
       return unsafeRequest( 'DELETE', urlOrHalRepresentation, optionalOptions );
@@ -315,6 +358,8 @@ export function create( optionalOptions = {} ) {
     *
     * @return {Promise}
     *    a promise for the response enriched by an `on` function (see `create()`)
+    *
+    * @memberof HalHttpClient
     */
    function follow( halRepresentation, relation, optionalOptions = {} ) {
       const options = {
@@ -395,6 +440,8 @@ export function create( optionalOptions = {} ) {
     *
     * @return {Promise}
     *    a promise for the response enriched by an `on` function (see `create()`)
+    *
+    * @memberof HalHttpClient
     */
    function followAll( halRepresentation, relation, optionalOptions = {} ) {
       const options = optionalOptions;
@@ -439,6 +486,8 @@ export function create( optionalOptions = {} ) {
     *
     * @return {Function}
     *    a function calling `follow` on the response it receives
+    *
+    * @memberof HalHttpClient
     */
    function thenFollow( relation, optionalOptions ) {
       return function( data ) {
@@ -464,6 +513,8 @@ export function create( optionalOptions = {} ) {
     *
     * @return {Function}
     *    a function calling `followAll` on the response it receives
+    *
+    * @memberof HalHttpClient
     */
    function thenFollowAll( relation, optionalOptions ) {
       return function( data ) {
@@ -586,6 +637,8 @@ export function create( optionalOptions = {} ) {
 
    /*
     * Currently only supports simple path fragments, query (`?`) and query continuation (`&`) prefixes.
+    *
+    * @private
     */
    function expandPossibleVars( link, vars ) {
       if( !link.templated ) {
@@ -651,6 +704,8 @@ export function create( optionalOptions = {} ) {
     * The resulting promise is rejected if at least one input promise is rejected and resolved otherwise.
     * The argument array consists of all promise values, thus inspection by the application is necessary to
     * sort out the rejections.
+    *
+    * @private
     */
    function allSettled( promises ) {
       return new Promise( ( resolve, reject ) => {
@@ -744,19 +799,7 @@ export function create( optionalOptions = {} ) {
 
    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-   return {
-      get,
-      head,
-      put,
-      post,
-      patch,
-      del,
-      delete: del,
-      follow,
-      followAll,
-      thenFollow,
-      thenFollowAll
-   };
+   return api;
 
 }
 

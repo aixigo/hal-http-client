@@ -2,6 +2,7 @@
 
 ## Last Changes
 
+- [#2](https://github.com/aixigo/hal-http-client/issues/2): added an improved README
 - [#11](https://github.com/aixigo/hal-http-client/issues/11): removed jasmine dependency
 - [#10](https://github.com/aixigo/hal-http-client/issues/10): moved repository to different organization
 - [#3](https://github.com/aixigo/hal-http-client/issues/3): added API doc

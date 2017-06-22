@@ -8,7 +8,7 @@
       "test-watch": "watch \"npm test\" . --wait=1 -p /node_modules/",
       "prepublish": "npm run dist",
       "apidoc": "laxar-dox -d docs/api hal-http-client.js",
-      "dist": "babel -d dist hal-http-client.js"
+      "dist": "babel hal-http-client.js -d dist --source-maps"
    },
    "repository": {
       "type": "git",

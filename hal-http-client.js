@@ -4,6 +4,9 @@
  * http://laxarjs.org/license
  */
 /**
+ * A _status code driven_ JSON [HAL](http://stateless.co/hal_specification.html) HTTP client based on the
+ * [fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API).
+ * 
  * @module hal-http-client
  */
 
@@ -42,41 +45,44 @@ const DEFAULT_PATCH_HEADERS = {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
- * Creates new http client for usage with a RESTful backend supporting the content type
+ * Creates a new http client for usage with a RESTful backend supporting the content type
  * `application/hal+json` (https://tools.ietf.org/html/draft-kelly-json-hal-06).
  *
- * Promises returned by the methods of a hal client are basically the ones returned by the given `q`
- * library enriched by an `on` function. This function can be called with a map of status code to handler
- * function. Suffixes of a status code can be replaced by the wildcard character `x`. Note that in reality
- * only something like `2xx` (match all successful codes) and `xxx` (match any code) make sense, as for
- * example `20x` doesn't reference any semantically useful code range. It is possible to reuse the same
- * handler for several codes (optionally with wildcards) by joining them with the `|` (pipe) character,
- * Each handler receives the http response as argument. In case of `followAll()` or a handler returned by
- * `thenFollowAll()` an array of responses is given.
- *
  * Example:
- * ```javascript
- * halClient.get( 'http://host/someResource' )
+ * ```js
+ * const hal = create( {
+ *    on: {
+ *       'xxx'( data, response ) {
+ *          console.log( 'I\'ll handle everything not handled locally' );
+ *       }
+ *    }
+ * } );
+ * 
+ * hal.get( 'http://host/someResource' )
  *    .on( {
- *       '2xx'( response ) {
- *          console.log( 'Everything looks fine: ', response.data );
+ *       '2xx'( data, response ) {
+ *          console.log( 'Everything looks fine: ', data );
+ *          return hal.follow( data, 'some-relation' );
  *       },
- *       '4xx|5xx'( response ) {
+ *       '4xx|5xx'( data, response ) {
  *          console.log( 'Server or client failed. Who knows? The status!', response.status );
+ *       }
+ *    } )
+ *    // handle the response from following 'some-relation'
+ *    .on( {
+ *       '200'( data, response ) {
+ *          console.log( 'I got this: ', data );
  *       }
  *    } );
  * ```
- *
- * If no matching handler was found in the object passed to `on`, the global handlers are searched for a
- * matching handler. Note that a more specific global handler will be favored over a more general local
- * handler. If no handler at all was found, a message in level `debug` is logged.
- * A handler may then return a new promise generated from a hal http request and thus chain several `on`
- * handlers.
+ * 
+ * See {@link #ResponsePromise} for further information on the `on` function.
  *
  * @param {Object} [optionalOptions]
  *    map of global configuration to use for the hal client
  * @param {Boolean} [optionalOptions.queueUnsafeRequests]
- *    if `true` an unsafe request has to be finished before the next is started. Default is `false`
+ *    if `true` an unsafe request (DELETE, PATCH, POST and PUT) has to be finished before the next is started.
+ *    Default is `false`
  * @param {Object} [optionalOptions.headers]
  *    global headers to send along with every request
  * @param {Object} [optionalOptions.fetchInit]
@@ -87,7 +93,8 @@ const DEFAULT_PATCH_HEADERS = {
  *    global `on` handlers to use as fallback if no matching handler was found in an `on` call
  * @param {Function} [optionalOptions.responseTransformer]
  *    a function that is called for every response and must return an optionally transformed version of
- *    that response. This currently is only used for url rewriting after proxied requests during development
+ *    that response. This can e.g. be used for url rewriting of proxied requests during development. This
+ *    should not be used in production for transformation of actual data
  * @param {Function} [optionalOptions.logError]
  *    a function to log error messages to. By default `console.error` is used
  * @param {Function} [optionalOptions.logDebug]
@@ -148,8 +155,8 @@ export function create( optionalOptions = {} ) {
     *    `method` are ignored from this option, since they are either parameters on their own or implemented
     *    as specific function.
     *
-    * @return {Promise}
-    *    a promise for the response enriched by an `on` function (see `create()`)
+    * @return {ResponsePromise}
+    *    an extended promise for the response
     *
     * @memberof HalHttpClient
     */
@@ -194,8 +201,8 @@ export function create( optionalOptions = {} ) {
     *    `method` are ignored from this option, since they are either parameters on their own or implemented
     *    as specific function.
     *
-    * @return {Promise}
-    *    a promise for the response enriched by an `on` function (see `create()`)
+    * @return {ResponsePromise}
+    *    an extended promise for the response
     *
     * @memberof HalHttpClient
     */
@@ -230,8 +237,8 @@ export function create( optionalOptions = {} ) {
     *    `method` are ignored from this option, since they are either parameters on their own or implemented
     *    as specific function.
     *
-    * @return {Promise}
-    *    a promise for the response enriched by an `on` function (see `create()`)
+    * @return {ResponsePromise}
+    *    an extended promise for the response
     *
     * @memberof HalHttpClient
     */
@@ -259,8 +266,8 @@ export function create( optionalOptions = {} ) {
     *    `method` are ignored from this option, since they are either parameters on their own or implemented
     *    as specific function.
     *
-    * @return {Promise}
-    *    a promise for the response enriched by an `on` function (see `create()`)
+    * @return {ResponsePromise}
+    *    an extended promise for the response
     *
     * @memberof HalHttpClient
     */
@@ -288,8 +295,8 @@ export function create( optionalOptions = {} ) {
     *    `method` are ignored from this option, since they are either parameters on their own or implemented
     *    as specific function.
     *
-    * @return {Promise}
-    *    a promise for the response enriched by an `on` function (see `create()`)
+    * @return {ResponsePromise}
+    *    an extended promise for the response
     *
     * @memberof HalHttpClient
     */
@@ -315,8 +322,8 @@ export function create( optionalOptions = {} ) {
     *    `method` are ignored from this option, since they are either parameters on their own or implemented
     *    as specific function.
     *
-    * @return {Promise}
-    *    a promise for the response enriched by an `on` function (see `create()`)
+    * @return {ResponsePromise}
+    *    an extended promise for the response
     *
     * @memberof HalHttpClient
     */
@@ -333,13 +340,13 @@ export function create( optionalOptions = {} ) {
     * GET request for this url is performed. If the relation could not be found in the given representation
     * the resulting promise is rejected.
     *
-    * If there are multiple links or embedded resources, by default only the first one will possibly be
-    * requested and its response passed to the consumers of the promise. In case the `followAll` option is
-    * set to `true`, all found embedded representations are returned or all relations found in the `_links`
-    * property are requested resp.. The result the promise then is resolved with, will be an array of
-    * responses instead of a single response.
-    * As there might be different status codes for the responses, a specific `on` handler is only called
-    * if all status codes yield the same value. In any other case *only* the handler for `xxx` is called.
+    * If there are multiple links or embedded resources, by default only the first one will be requested and
+    * its response passed to the consumers of the promise. In case the `followAll` option is set to `true`, 
+    * all found embedded representations are returned or all relations found in the `_links` property are
+    * requested resp.. The resulting promise will then be resolved with an array of responses instead of a
+    * single response. As there might be different status codes for the responses, a specific `on` handler is
+    * only called if all status codes yield the same value. In any other case *only* the handler for `xxx` is
+    * called. This can be prevented, if a list resource always embeds the representations of its items.
     *
     * @param {Object} halRepresentation
     *    the representation whose relation should be followed
@@ -356,8 +363,8 @@ export function create( optionalOptions = {} ) {
     * @param {Boolean} [optionalOptions.followAll]
     *    if `true`, follows all entities found for that relation. Default is `false`
     *
-    * @return {Promise}
-    *    a promise for the response enriched by an `on` function (see `create()`)
+    * @return {ResponsePromise}
+    *    an extended promise for the response
     *
     * @memberof HalHttpClient
     */
@@ -423,7 +430,8 @@ export function create( optionalOptions = {} ) {
    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
    /**
-    * A shortcut function for `follow( halRepresentation, relation, { followAll: true } )`.
+    * A shortcut function for {@link #HalHttpClient.follow()} called with `followAll` yielding `true`:
+    * `follow( halRepresentation, relation, { followAll: true } )`.
     *
     * @param {Object} halRepresentation
     *    the representation whose relation should be followed
@@ -438,8 +446,8 @@ export function create( optionalOptions = {} ) {
     *    `method` are ignored from this option, since they are either parameters on their own or implemented
     *    as specific function.
     *
-    * @return {Promise}
-    *    a promise for the response enriched by an `on` function (see `create()`)
+    * @return {ResponsePromise}
+    *    an extended promise for the response
     *
     * @memberof HalHttpClient
     */
@@ -452,13 +460,12 @@ export function create( optionalOptions = {} ) {
    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
    /**
-    * Helper factory for `follow()` function calls. The returned function only expects a response object
-    * with at least a representation in the `data´ field and calls `follow` using that representation as
-    * first argument. The purpose of this method is for use within chained follow calls, especially in `on`
-    * handlers.
+    * Helper factory for `follow()` function calls. The returned function only expects a HAL representation in
+    * the data object, and calls {@link #HalHttpClient.follow()} using that representation as first argument.
+    * The purpose of this method is the use within chained `follow()` calls, especially in `on` handlers.
     *
     * Example:
-    * ```javascript
+    * ```js
     * halClient.get( 'http://host/office' )
     *    .on( { '200': halClient.thenFollow( 'desk' ) } )
     *    .on( { '200': halClient.thenFollow( 'computer' ) } )
@@ -469,7 +476,8 @@ export function create( optionalOptions = {} ) {
     * fetched, then the `desk` relation is followed, then within the resulting representation the `computer`
     * relation is followed and finally within that representation the `keyboard` relation is followed.
     *
-    * Note that this method cannot be used in an `on` handler after a `followAll` request.
+    * Note that this method cannot be used in an `on` handler after a `followAll` request, as there will be
+    * an array of objects instead of only one object.
     *
     * @param {String} relation
     *    the relation to follow
@@ -498,7 +506,8 @@ export function create( optionalOptions = {} ) {
    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
    /**
-    * A shortcut function for `thenFollow( relation, { followAll: true } )`.
+    * A shortcut function for {@link #HalHttpClient.thenFollow()} called with `followAll` yielding `true`:
+    * `thenFollow( relation, { followAll: true } )`.
     *
     * @param {String} relation
     *    the relation to follow
@@ -556,6 +565,75 @@ export function create( optionalOptions = {} ) {
 
       let responseBodyPromise;
 
+      /**
+       * A simple extension of a normal
+       * [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise).
+       * Its purpose is to add some convenience when following relations of a resource. Using the standard
+       * Promise API is still possible.
+       * 
+       * @name ResponsePromise
+       * @constructor
+       * @extends Promise
+       */
+
+      /**
+       * A function to register handlers for the possible
+       * [HTTP status codes](https://tools.ietf.org/html/rfc7231#page-47) returned by the API. This is the
+       * actual heart of this library.
+       * 
+       * This function has to be called with a map of status codes to functions responsible for handling the
+       * response that was given for an actual status code. It is possible to group status codes using the
+       * same handler for their codes. And lastly wildcards are possible to be able to treat a specific class
+       * of status codes conveniently the same way.
+       * 
+       * Let's have a look at an example:
+       * ```js
+       * const handler1 = ( json, response ) => {};
+       * const handler2 = ( json, response ) => {};
+       * const handler3 = ( json, response ) => {};
+       * 
+       * hal.get( 'my-resource' )
+       *    .on( {
+       *       '200': handler1,
+       *       '201|202|204': handler2,
+       *       '5xx': handler3
+       *    } );
+       * ```
+       * Here `handler1` will only be called for status code _200_, `handler2` for the given status codes
+       * _201_, _202_ and _204_, and `handler3` will be called for any type of server error. A final catch all
+       * handler could have also been added simply using a full wildcard string _xxx_. Any code that is not
+       * handled by this map of handlers is forwarded to the global handlers map (see {@link create()}). In 
+       * case there is no handler there either, this will be logged and the next returned promise will be
+       * rejected.
+       * 
+       * Each handler receives to arguments: First the body of the response, already parsed from JSON string
+       * to a JavaScript object. The second argument is the plain response object as returned by the
+       * underlying `fetch` API. In case the entries of a list resource were fetched the arguments will be
+       * arrays, carrying the body and response objects of all list items.
+       * 
+       * Handlers can then further follow relations of the provided body object by using the convenience
+       * methods {@link #HalHttpClient.follow()} or {@link #HalHttpClient.followAll()}, and returning the
+       * resulting `ResponsePromise` for typical Promise-like chaining. If a handler really does nothing apart
+       * from following a relation of the HAL response, a generic handler can even be created by using
+       * {@link #HalHttpClient.thenFollow()} or {@link #HalHttpClient.thenFollowAll()}.
+       * 
+       * If a handler returns nothing or `null`, and by that indicating an empty response, subsequent handlers
+       * will never be called.
+       * 
+       * *Special cases*
+       * 
+       * - _An empty list resource_: This will be returned with overall status code _200_.
+       * - _Different status codes for the list items_: This will only trigger the _xxx_ handler. 
+       * 
+       * 
+       * @param {Object} handlers
+       *    the map of handlers as described above
+       * 
+       * @return {ResponsePromise}
+       *    an extended promise for the result of the handler that was called
+       * 
+       * @memberof ResponsePromise
+       */
       promise.on = handlers => extendResponsePromise( promise.then( createCallStatusHandler( handlers ) ) );
 
       return promise;

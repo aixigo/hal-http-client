@@ -31,14 +31,14 @@ import * as halHttp from '../hal-http-client';
 const hal = halHttp.create( {
    headers: { 'accept-language': 'de' },
    on: {
-      // globally define how responses for status codes should be handled, that were not handled locally
+      // globally define how responses for status codes should be handled that were not handled locally
       '5xx': ( data, response ) => {
          console.error( `Caught unhandled 5xx error (status: ${response.status})` );
       }
    }
 } );
 hal.get( 'http://my-server/api/root' )
-   // See the example below on how to go on from here
+// See the example below on how to go on from here
 ```
 
 
@@ -46,7 +46,7 @@ hal.get( 'http://my-server/api/root' )
 
 Lets take the following simple model of a person and his cars from the specs:
 
-```json
+```js
 // person
 {
    "name": "Peter",
@@ -73,7 +73,7 @@ Lets take the following simple model of a person and his cars from the specs:
 
 An according JSON response with all sub resources embedded could look like this:
 
-```json
+```js
 {
    "name": "Peter",
    "age": 34,
@@ -159,15 +159,15 @@ hal.get( '/peter' )
 
 Diving even deeper into details, the `hal.follow` method actually does the following (written in pseudo code):
 
-```
+```vb
 function follow( resource, relation ) {
    if relation_is_embedded then
       return promise_for_embedded_representation;
 
    else if relation_is_in_links then
       set url to href_of_link_object;
-      set response to result_of_HTTP_GET_url;
-      return promise_for_response;
+      set httpResponse to result_of_HTTP_GET_url;
+      return promise_for_http_response;
 
    else
       return rejected_promise;
@@ -175,3 +175,5 @@ function follow( resource, relation ) {
 ```
 
 The method `hal.thenFollowAll` basically works the same, only that it expects to find an array of relations to follow on the given resource and return all results again as an array.
+
+From here on you should consult the [API doc](docs/api/hal-http-client.md) to have a look at all the other APIs available on the _hal-http-client_.

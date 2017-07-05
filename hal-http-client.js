@@ -6,9 +6,11 @@
 /**
  * A _status code driven_ JSON [HAL](http://stateless.co/hal_specification.html) HTTP client based on the
  * [fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API).
- * 
+ *
  * @module hal-http-client
  */
+
+import template from 'url-template';
 
 /**
  * Default headers used with safe http methods.
@@ -57,7 +59,7 @@ const DEFAULT_PATCH_HEADERS = {
  *       }
  *    }
  * } );
- * 
+ *
  * hal.get( 'http://host/someResource' )
  *    .on( {
  *       '2xx'( data, response ) {
@@ -75,7 +77,7 @@ const DEFAULT_PATCH_HEADERS = {
  *       }
  *    } );
  * ```
- * 
+ *
  * See {@link #ResponsePromise} for further information on the `on` function.
  *
  * @param {Object} [optionalOptions]
@@ -341,7 +343,7 @@ export function create( optionalOptions = {} ) {
     * the resulting promise is rejected.
     *
     * If there are multiple links or embedded resources, by default only the first one will be requested and
-    * its response passed to the consumers of the promise. In case the `followAll` option is set to `true`, 
+    * its response passed to the consumers of the promise. In case the `followAll` option is set to `true`,
     * all found embedded representations are returned or all relations found in the `_links` property are
     * requested resp.. The resulting promise will then be resolved with an array of responses instead of a
     * single response. As there might be different status codes for the responses, a specific `on` handler is
@@ -570,7 +572,7 @@ export function create( optionalOptions = {} ) {
        * [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise).
        * Its purpose is to add some convenience when following relations of a resource. Using the standard
        * Promise API is still possible.
-       * 
+       *
        * @name ResponsePromise
        * @constructor
        * @extends Promise
@@ -580,18 +582,18 @@ export function create( optionalOptions = {} ) {
        * A function to register handlers for the possible
        * [HTTP status codes](https://tools.ietf.org/html/rfc7231#page-47) returned by the API. This is the
        * actual heart of this library.
-       * 
+       *
        * This function has to be called with a map of status codes to functions responsible for handling the
        * response that was given for an actual status code. It is possible to group status codes using the
        * same handler for their codes. And lastly wildcards are possible to be able to treat a specific class
        * of status codes conveniently the same way.
-       * 
+       *
        * Let's have a look at an example:
        * ```js
        * const handler1 = ( json, response ) => {};
        * const handler2 = ( json, response ) => {};
        * const handler3 = ( json, response ) => {};
-       * 
+       *
        * hal.get( 'my-resource' )
        *    .on( {
        *       '200': handler1,
@@ -602,36 +604,36 @@ export function create( optionalOptions = {} ) {
        * Here `handler1` will only be called for status code _200_, `handler2` for the given status codes
        * _201_, _202_ and _204_, and `handler3` will be called for any type of server error. A final catch all
        * handler could have also been added simply using a full wildcard string _xxx_. Any code that is not
-       * handled by this map of handlers is forwarded to the global handlers map (see {@link create()}). In 
+       * handled by this map of handlers is forwarded to the global handlers map (see {@link create()}). In
        * case there is no handler there either, this will be logged and the next returned promise will be
        * rejected.
-       * 
+       *
        * Each handler receives to arguments: First the body of the response, already parsed from JSON string
        * to a JavaScript object. The second argument is the plain response object as returned by the
        * underlying `fetch` API. In case the entries of a list resource were fetched the arguments will be
        * arrays, carrying the body and response objects of all list items.
-       * 
+       *
        * Handlers can then further follow relations of the provided body object by using the convenience
        * methods {@link #HalHttpClient.follow()} or {@link #HalHttpClient.followAll()}, and returning the
        * resulting `ResponsePromise` for typical Promise-like chaining. If a handler really does nothing apart
        * from following a relation of the HAL response, a generic handler can even be created by using
        * {@link #HalHttpClient.thenFollow()} or {@link #HalHttpClient.thenFollowAll()}.
-       * 
+       *
        * If a handler returns nothing or `null`, and by that indicating an empty response, subsequent handlers
        * will never be called.
-       * 
+       *
        * *Special cases*
-       * 
+       *
        * - _An empty list resource_: This will be returned with overall status code _200_.
-       * - _Different status codes for the list items_: This will only trigger the _xxx_ handler. 
-       * 
-       * 
+       * - _Different status codes for the list items_: This will only trigger the _xxx_ handler.
+       *
+       *
        * @param {Object} handlers
        *    the map of handlers as described above
-       * 
+       *
        * @return {ResponsePromise}
        *    an extended promise for the result of the handler that was called
-       * 
+       *
        * @memberof ResponsePromise
        */
       promise.on = handlers => extendResponsePromise( promise.then( createCallStatusHandler( handlers ) ) );
@@ -713,27 +715,12 @@ export function create( optionalOptions = {} ) {
 
    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-   /*
-    * Currently only supports simple path fragments, query (`?`) and query continuation (`&`) prefixes.
-    *
-    * @private
-    */
    function expandPossibleVars( link, vars ) {
       if( !link.templated ) {
          return link.href;
       }
 
-      // TODO use uri template library ( e.g. https://www.npmjs.com/package/url-template )
-
-      return link.href.replace( /\{([^}]*)}/ig, ( fullMatch, key ) => {
-         if( key.indexOf( '?' ) === 0 || key.indexOf( '&' ) === 0 ) {
-            const encodedKey = key.charAt( 0 ) + encodeURIComponent( key.substr( 1 ) );
-            const encodedValue = encodeURIComponent( vars[ key.substr( 1 ) ] );
-            return `${encodedKey}=${encodedValue}`;
-         }
-
-         return encodeURIComponent( vars[ key ] || '' );
-      } );
+      return template.parse( link.href ).expand( vars );
    }
 
    ///////////////////////////////////////////////////////////////////////////////////////////////////////////

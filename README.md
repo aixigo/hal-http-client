@@ -16,6 +16,7 @@ The _hal-http-client_ defines a convenient API for accessing resources represent
 - If a resource is embedded, it _transparently reads the embedded representation_ instead of making a real HTTP request
 - Flow control is supported by providing a _status code driven_ API
 
+[Templated URLs (RFC6570)](https://tools.ietf.org/html/rfc6570#section-3.2.7) are supported via the [url-template](https://github.com/bramstein/url-template) library.
 
 ## Installation and Usage
 

@@ -5,7 +5,7 @@
    "main": "dist/hal-http-client.js",
    "scripts": {
       "test": "jasmine",
-      "test-watch": "watch \"npm test\" . --wait=1 -p /node_modules/",
+      "test-watch": "watch \"npm test\" . --interval=1 -p /node_modules/",
       "prepublish": "npm run dist",
       "apidoc": "laxar-dox -d docs/api hal-http-client.js",
       "dist": "babel hal-http-client.js -d dist --source-maps"
@@ -39,5 +39,8 @@
       "jasmine-es6": "^0.4.0",
       "laxar-dox": "^2.0.0-rc.0",
       "watch": "^1.0.1"
+   },
+   "dependencies": {
+      "url-template": "^2.0.8"
    }
 }

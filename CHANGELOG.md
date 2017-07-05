@@ -2,6 +2,9 @@
 
 ## Last Changes
 
+- [#1](https://github.com/aixigo/hal-http-client/issues/1): templated URLs: using url-template for variable substitution
+
+
 ## v0.7.0
 
 - [#12](https://github.com/aixigo/hal-http-client/issues/12): improved API doc with extracted response promise type

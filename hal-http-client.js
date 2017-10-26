@@ -364,6 +364,8 @@ export function create( optionalOptions = {} ) {
     *    as specific function.
     * @param {Boolean} [optionalOptions.followAll]
     *    if `true`, follows all entities found for that relation. Default is `false`
+    * @param {Object} [optionalOptions.vars]
+    *    map of variables to replace in templated URLs
     *
     * @return {ResponsePromise}
     *    an extended promise for the response
@@ -447,6 +449,8 @@ export function create( optionalOptions = {} ) {
     *    additional init options for `fetch` to be used for this request only. The keys `headers`, `body` and
     *    `method` are ignored from this option, since they are either parameters on their own or implemented
     *    as specific function.
+    * @param {Object} [optionalOptions.vars]
+    *    map of variables to replace in templated URLs
     *
     * @return {ResponsePromise}
     *    an extended promise for the response

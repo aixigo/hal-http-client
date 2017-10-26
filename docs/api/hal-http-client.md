@@ -312,6 +312,7 @@ called. This can be prevented, if a list resource always embeds the representati
 | _optionalOptions.headers_ | `Object` |  headers to send along with the request. The same default headers as for `get()` are used |
 | _optionalOptions.fetchInit_ | `Object` |  additional init options for `fetch` to be used for this request only. The keys `headers`, `body` and `method` are ignored from this option, since they are either parameters on their own or implemented as specific function. |
 | _optionalOptions.followAll_ | `Boolean` |  if `true`, follows all entities found for that relation. Default is `false` |
+| _optionalOptions.vars_ | `Object` |  map of variables to replace in templated URLs |
 
 ##### Returns
 
@@ -333,6 +334,7 @@ A shortcut function for [`#HalHttpClient.follow()`](#HalHttpClient.follow) calle
 | _optionalOptions_ | `Object` |  configuration to use for the request |
 | _optionalOptions.headers_ | `Object` |  headers to send along with the request. The same default headers as for `get()` are used |
 | _optionalOptions.fetchInit_ | `Object` |  additional init options for `fetch` to be used for this request only. The keys `headers`, `body` and `method` are ignored from this option, since they are either parameters on their own or implemented as specific function. |
+| _optionalOptions.vars_ | `Object` |  map of variables to replace in templated URLs |
 
 ##### Returns
 

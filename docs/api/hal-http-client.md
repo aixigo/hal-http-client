@@ -12,6 +12,7 @@ A _status code driven_ JSON [HAL](http://stateless.co/hal_specification.html) HT
 - [removeHalKeys()](#removeHalKeys)
 - [canFollow()](#canFollow)
 - [firstRelationHref()](#firstRelationHref)
+- [selfLink()](#selfLink)
 
 **Types**
 
@@ -133,6 +134,23 @@ returned. If the relation yields a list, the `href` attribute value of the first
 | -------- | ---- | ----------- |
 | halRepresentation | `Object` |  the representation to search for the relation |
 | relation | `String` |  the relation to get a `href` attribute value from |
+
+##### Returns
+
+| Type | Description |
+| ---- | ----------- |
+| `String` |  the `href` attribute value if available, `null` otherwise |
+
+#### <a id="selfLink"></a>selfLink( halRepresentation )
+
+Returns the first value of href for the *self* relation. The same as for [`#firstRelationHref`](#firstRelationHref) holds,
+but normally a *self* relation should always be present for a RESTful webservice.
+
+##### Parameters
+
+| Property | Type | Description |
+| -------- | ---- | ----------- |
+| halRepresentation | `Object` |  the representation to search for the *self* relation |
 
 ##### Returns
 
@@ -277,7 +295,7 @@ GET request for this url is performed. If the relation could not be found in the
 the resulting promise is rejected.
 
 If there are multiple links or embedded resources, by default only the first one will be requested and
-its response passed to the consumers of the promise. In case the `followAll` option is set to `true`, 
+its response passed to the consumers of the promise. In case the `followAll` option is set to `true`,
 all found embedded representations are returned or all relations found in the `_links` property are
 requested resp.. The resulting promise will then be resolved with an array of responses instead of a
 single response. As there might be different status codes for the responses, a specific `on` handler is
@@ -415,7 +433,7 @@ hal.get( 'my-resource' )
 Here `handler1` will only be called for status code _200_, `handler2` for the given status codes
 _201_, _202_ and _204_, and `handler3` will be called for any type of server error. A final catch all
 handler could have also been added simply using a full wildcard string _xxx_. Any code that is not
-handled by this map of handlers is forwarded to the global handlers map (see [`create()`](hal-http-client.md)). In 
+handled by this map of handlers is forwarded to the global handlers map (see [`create()`](hal-http-client.md)). In
 case there is no handler there either, this will be logged and the next returned promise will be
 rejected.
 
@@ -436,7 +454,7 @@ will never be called.
 *Special cases*
 
 - _An empty list resource_: This will be returned with overall status code _200_.
-- _Different status codes for the list items_: This will only trigger the _xxx_ handler. 
+- _Different status codes for the list items_: This will only trigger the _xxx_ handler.
 
 ##### Parameters
 

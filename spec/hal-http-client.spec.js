@@ -64,6 +64,15 @@ describe( 'The hal http client module', () => {
       }, 'relation' ) ).toEqual( 'linkedFancyUrl' );
    } );
 
+   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+   it( 'has a function to retrieve the self link of a representation (#17)', () => {
+      expect( halHttp.selfLink( { } ) ).toBe( null );
+      expect( halHttp.selfLink( {
+         _links: { self: { href: '/self' } }
+      } ) ).toEqual( '/self' );
+   } );
+
 } );
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////

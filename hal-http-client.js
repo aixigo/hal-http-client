@@ -871,15 +871,15 @@ export function create( optionalOptions = {} ) {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
-* Returns a copy of the given hal representation with all hal media type specific properties removed.
-* Currently these are `_links` and `_embedded`.
-*
-* @param {Object} halRepresentation
-*    the representation to clean up
-*
-* @return {Object}
-*    the copy without hal media type keys
-*/
+ * Returns a copy of the given hal representation with all hal media type specific properties removed.
+ * Currently these are `_links` and `_embedded`.
+ *
+ * @param {Object} halRepresentation
+ *    the representation to clean up
+ *
+ * @return {Object}
+ *    the copy without hal media type keys
+ */
 export function removeHalKeys( halRepresentation ) {
    if( halRepresentation != null && typeof halRepresentation === 'object' ) {
       const copy = JSON.parse( JSON.stringify( halRepresentation ) );
@@ -893,15 +893,15 @@ export function removeHalKeys( halRepresentation ) {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
-* Returns `true` if the given relation exists as link or is embedded.
-*
-* @param {Object} halRepresentation
-*    hal representation to check for the relation
-* @param {String} relation
-*    name of the relation to find
-*
-* @return {Boolean} `true` if `relation` exists in the representation
-*/
+ * Returns `true` if the given relation exists as link or is embedded.
+ *
+ * @param {Object} halRepresentation
+ *    hal representation to check for the relation
+ * @param {String} relation
+ *    name of the relation to find
+ *
+ * @return {Boolean} `true` if `relation` exists in the representation
+ */
 export function canFollow( halRepresentation, relation ) {
    return !!( ( halRepresentation._links && relation in halRepresentation._links ) ||
       ( halRepresentation._embedded && relation in halRepresentation._embedded ) );
@@ -910,19 +910,19 @@ export function canFollow( halRepresentation, relation ) {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
-* Returns the first value of href for the requested relation. Search for the relation starts under
-* `_links` and continues in `_embedded`, if not found in `_links`. If not found at all, `null` is
-* returned.
-* If the relation is found and yields only a single value, that value's `href` attribute value is
-* returned. If the relation yields a list, the `href` attribute value of the first entry is returned.
-*
-* @param {Object} halRepresentation
-*    the representation to search for the relation
-* @param {String} relation
-*    the relation to get a `href` attribute value from
-*
-* @return {String} the `href` attribute value if available, `null` otherwise
-*/
+ * Returns the first value of href for the requested relation. Search for the relation starts under
+ * `_links` and continues in `_embedded`, if not found in `_links`. If not found at all, `null` is
+ * returned.
+ * If the relation is found and yields only a single value, that value's `href` attribute value is
+ * returned. If the relation yields a list, the `href` attribute value of the first entry is returned.
+ *
+ * @param {Object} halRepresentation
+ *    the representation to search for the relation
+ * @param {String} relation
+ *    the relation to get a `href` attribute value from
+ *
+ * @return {String} the `href` attribute value if available, `null` otherwise
+ */
 export function firstRelationHref( halRepresentation, relation ) {
    if( halRepresentation._links && relation in halRepresentation._links ) {
       const linkOrLinks = halRepresentation._links[ relation ];
@@ -930,6 +930,21 @@ export function firstRelationHref( halRepresentation, relation ) {
    }
 
    return path( halRepresentation, `_embedded.${relation}._links.self.href`, null );
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Returns the first value of href for the *self* relation. The same as for {@link #firstRelationHref} holds,
+ * but normally a *self* relation should always be present for a RESTful webservice.
+ *
+ * @param {Object} halRepresentation
+ *    the representation to search for the *self* relation
+ *
+ * @return {String} the `href` attribute value if available, `null` otherwise
+ */
+export function selfLink( halRepresentation ) {
+   return firstRelationHref( halRepresentation, 'self' );
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////

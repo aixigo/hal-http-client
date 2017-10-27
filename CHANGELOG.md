@@ -2,6 +2,9 @@
 
 ## Last Changes
 
+
+## v0.8.0
+
 - [#15](https://github.com/aixigo/hal-http-client/issues/15): fixed reading a response body twice
 - [#18](https://github.com/aixigo/hal-http-client/issues/18): improved handling of optional relations
     + NEW FEATURE: see ticket for details

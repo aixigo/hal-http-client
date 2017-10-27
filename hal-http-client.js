@@ -581,8 +581,6 @@ export function create( optionalOptions = {} ) {
 
    function extendResponsePromise( promise ) {
 
-      let responseBodyPromise;
-
       /**
        * A simple extension of a normal
        * [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise).
@@ -710,20 +708,19 @@ export function create( optionalOptions = {} ) {
                   );
                }
 
-
                response.__unhandledOn = true;
                return Promise.reject( response );
             }
-            if( !responseBodyPromise ) {
+            if( !response.__bodyPromise ) {
                if( Array.isArray( response ) ) {
-                  responseBodyPromise = Promise.all( response.map( response => response.text() ) );
+                  response.__bodyPromise = Promise.all( response.map( response => response.text() ) );
                }
                else {
-                  responseBodyPromise = response.text();
+                  response.__bodyPromise = response.text();
                }
             }
 
-            return responseBodyPromise
+            return response.__bodyPromise
                .then( body => {
                   let json = null;
                   if( Array.isArray( body ) ) {

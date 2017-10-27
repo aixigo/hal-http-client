@@ -648,6 +648,22 @@ describe( 'A hal client instance', () => {
 
       ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+      it( 'doesn\'t throw when following a relation in parallel', async () => {
+         try {
+            await Promise.all( [
+               hal.follow( rootHalResource, 'cars' )
+                  .on( { '200': hal.thenFollowAll( 'car' ) } ),
+               hal.follow( rootHalResource, 'cars' )
+                  .on( { '200': hal.thenFollowAll( 'car' ) } )
+            ] );
+         }
+         catch( e ) {
+            fail( e );
+         }
+      } );
+
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
       it( 'supports following simple path fragment templated URIs', async () => {
          fetchMock.get( url( '/me/carsByType/VW' ), { status: 200, body: {} } );
 

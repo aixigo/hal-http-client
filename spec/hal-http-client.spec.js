@@ -460,6 +460,27 @@ describe( 'A hal client instance', () => {
 
       ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+      it( 'calls the "norel" handler if the relation is missing', async () => {
+         const onSpyNorel = jasmine.createSpy( 'onSpyNorel' );
+         await hal.follow( rootHalResource, 'i-dont-exist' ).on( {
+            '200': onSpy200,
+            '2xx': onSpy2xx,
+            'norel': onSpyNorel
+         } );
+
+         expect( onSpyNorel ).toHaveBeenCalledWith(
+            null,
+            jasmine.objectContaining( {
+               status: 'norel',
+               info: { relation: 'i-dont-exist', halRepresentation: rootHalResource }
+            } )
+         );
+         expect( onSpy200 ).not.toHaveBeenCalled();
+         expect( onSpy2xx ).not.toHaveBeenCalled();
+      } );
+
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
       it( 'makes a GET request for a resource that is not embedded', async () => {
          await hal.follow( rootHalResource, 'cars' ).then( thenResolvedSpy, thenRejectedSpy );
 

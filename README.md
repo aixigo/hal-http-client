@@ -158,23 +158,33 @@ hal.get( '/peter' )
    } )
 ```
 
-Diving even deeper into details, the `hal.follow` method actually does the following (written in pseudo code):
+The method `hal.thenFollowAll` basically works the same, only that it expects to find an array of relations to follow on the given resource and return all results again as an array.
 
-```vb
-function follow( resource, relation ) {
-   if relation_is_embedded then
-      return promise_for_embedded_representation;
 
-   else if relation_is_in_links then
-      set url to href_of_link_object;
-      set httpResponse to result_of_HTTP_GET_url;
-      return promise_for_http_response;
+### Optional relations
 
-   else
-      return rejected_promise;
-}
+For some resources a relation may be optional.
+If it is sufficient to just check whether the relation is available or not, the function `halHttp.canFollow()` is the right choice.
+Simply pass it the representation as first and the relation to test as second argument:
+
+```js 
+halHttp.canFollow( peterResource, 'cars' ); // => true
+halHttp.canFollow( peterResource, 'job' ); // => false
 ```
 
-The method `hal.thenFollowAll` basically works the same, only that it expects to find an array of relations to follow on the given resource and return all results again as an array.
+If on the other hand two different tasks should be executed in either case, the "virtual" status code `'norel'` can instead be used as an `on`-handler:
+
+```js
+hal.follow( peterResource, 'work' )
+   .on( {
+      '200': () => {
+         console.log( 'Peter currently is employed' );
+      },
+      'norel': () => {
+         console.log( 'Peter currently is unemployed' );
+      }
+   } );
+```
+
 
 From here on you should consult the [API doc](docs/api/hal-http-client.md) to have a look at all the other APIs available on the _hal-http-client_.

@@ -47,6 +47,16 @@ const DEFAULT_PATCH_HEADERS = {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
+ * Virtual status code `'norel'` for a missing relation to use as key in the `on`-handlers map.
+ *
+ * @name STATUS_NOREL
+ * @type {String}
+ */
+export const STATUS_NOREL = 'norel';
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
  * Creates a new http client for usage with a RESTful backend supporting the content type
  * `application/hal+json` (https://tools.ietf.org/html/draft-kelly-json-hal-06).
  *
@@ -74,6 +84,9 @@ const DEFAULT_PATCH_HEADERS = {
  *    .on( {
  *       '200'( data, response ) {
  *          console.log( 'I got this: ', data );
+ *       },
+ *       'norel'() {
+ *           console.log( 'Oh no, seems "some-relation" is missing in the representation' );
  *       }
  *    } );
  * ```
@@ -420,12 +433,11 @@ export function create( optionalOptions = {} ) {
             }
          }
          else {
-            // NEEDS FIX B: Still not sure what to return here. Yield a 404 or something similar? Simulate no
-            // server response at all but simply reject as it is done right now?
-            reject( {
-               message: `Relation "${relation}" could not be found.`,
-               representation: halRepresentation,
-               relation
+            resolve( {
+               status: STATUS_NOREL,
+               info: { halRepresentation, relation },
+               headers: {},
+               text: () => Promise.resolve( JSON.stringify( null ) )
             } );
          }
       } ) );
@@ -597,6 +609,7 @@ export function create( optionalOptions = {} ) {
        * const handler1 = ( json, response ) => {};
        * const handler2 = ( json, response ) => {};
        * const handler3 = ( json, response ) => {};
+       * const handler4 = ( json, response ) => {};
        *
        * hal.get( 'my-resource' )
        *    .on( {
@@ -621,7 +634,9 @@ export function create( optionalOptions = {} ) {
        * methods {@link #HalHttpClient.follow()} or {@link #HalHttpClient.followAll()}, and returning the
        * resulting `ResponsePromise` for typical Promise-like chaining. If a handler really does nothing apart
        * from following a relation of the HAL response, a generic handler can even be created by using
-       * {@link #HalHttpClient.thenFollow()} or {@link #HalHttpClient.thenFollowAll()}.
+       * {@link #HalHttpClient.thenFollow()} or {@link #HalHttpClient.thenFollowAll()}. In addition to the
+       * http status codes and _xxx_ a "virtual" code of `'norel'` can be used to handle the case, where a
+       * relation is missing in a response.
        *
        * If a handler returns nothing or `null`, and by that indicating an empty response, subsequent handlers
        * will never be called.
@@ -630,6 +645,7 @@ export function create( optionalOptions = {} ) {
        *
        * - _An empty list resource_: This will be returned with overall status code _200_.
        * - _Different status codes for the list items_: This will only trigger the _xxx_ handler.
+       * - _The relation to follow doesn't exist_: The _norel_ handler will be called
        *
        *
        * @param {Object} handlers
@@ -674,7 +690,12 @@ export function create( optionalOptions = {} ) {
 
             const handler = findBestMatchingStatusHandler( status, statusHandlers, globalOnHandlers );
             if( !handler ) {
-               if( response.config && response.config.url ) {
+               if( status === STATUS_NOREL ) {
+                  const { relation, halRepresentation } = response.info;
+                  logError( `Relation "${relation}" is missing and no ${STATUS_NOREL} handler was found.` );
+                  logDebug( `Offending representation: ${JSON.stringify( halRepresentation )}` );
+               }
+               else if( response.config && response.config.url ) {
                   logDebug(
                      `Unhandled http status "${status}" of response for uri "${response.config.url}".`
                   );
@@ -732,7 +753,9 @@ export function create( optionalOptions = {} ) {
    function findBestMatchingStatusHandler( status, handlers, globalHandlers ) {
       const statusStr = `${status}`;
       const localHandlers = expandHandlers( handlers );
-      const statusKeys = [ statusStr, `${statusStr.substr( 0, 2 )}x`, `${statusStr[ 0 ]}xx`, 'xxx' ];
+      const statusKeys = status === STATUS_NOREL ?
+         [ STATUS_NOREL ] :
+         [ statusStr, `${statusStr.substr( 0, 2 )}x`, `${statusStr[ 0 ]}xx`, 'xxx' ];
 
       for( let i = 0, len = statusKeys.length; i < len; ++i ) {
          if( statusKeys[ i ] in localHandlers ) {

@@ -8,6 +8,7 @@ A _status code driven_ JSON [HAL](http://stateless.co/hal_specification.html) HT
 
 **Module Members**
 
+- [STATUS_NOREL](#STATUS_NOREL)
 - [create()](#create)
 - [removeHalKeys()](#removeHalKeys)
 - [canFollow()](#canFollow)
@@ -31,6 +32,10 @@ A _status code driven_ JSON [HAL](http://stateless.co/hal_specification.html) HT
   - [ResponsePromise.on()](#ResponsePromise.on)
 
 ## Module Members
+
+#### <a id="STATUS_NOREL"></a>STATUS_NOREL `String`
+
+Virtual status code `'norel'` for a missing relation to use as key in the `on`-handlers map.
 
 #### <a id="create"></a>create( optionalOptions )
 
@@ -61,6 +66,9 @@ hal.get( 'http://host/someResource' )
    .on( {
       '200'( data, response ) {
          console.log( 'I got this: ', data );
+      },
+      'norel'() {
+          console.log( 'Oh no, seems "some-relation" is missing in the representation' );
       }
    } );
 ```
@@ -424,6 +432,7 @@ Let's have a look at an example:
 const handler1 = ( json, response ) => {};
 const handler2 = ( json, response ) => {};
 const handler3 = ( json, response ) => {};
+const handler4 = ( json, response ) => {};
 
 hal.get( 'my-resource' )
    .on( {
@@ -448,7 +457,9 @@ Handlers can then further follow relations of the provided body object by using 
 methods [`#HalHttpClient.follow()`](#HalHttpClient.follow) or [`#HalHttpClient.followAll()`](#HalHttpClient.followAll), and returning the
 resulting `ResponsePromise` for typical Promise-like chaining. If a handler really does nothing apart
 from following a relation of the HAL response, a generic handler can even be created by using
-[`#HalHttpClient.thenFollow()`](#HalHttpClient.thenFollow) or [`#HalHttpClient.thenFollowAll()`](#HalHttpClient.thenFollowAll).
+[`#HalHttpClient.thenFollow()`](#HalHttpClient.thenFollow) or [`#HalHttpClient.thenFollowAll()`](#HalHttpClient.thenFollowAll). In addition to the
+http status codes and _xxx_ a "virtual" code of `'norel'` can be used to handle the case, where a
+relation is missing in a response.
 
 If a handler returns nothing or `null`, and by that indicating an empty response, subsequent handlers
 will never be called.
@@ -457,6 +468,7 @@ will never be called.
 
 - _An empty list resource_: This will be returned with overall status code _200_.
 - _Different status codes for the list items_: This will only trigger the _xxx_ handler.
+- _The relation to follow doesn't exist_: The _norel_ handler will be called
 
 ##### Parameters
 

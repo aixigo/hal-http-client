@@ -2,6 +2,8 @@
 
 ## Last Changes
 
+- [#18](https://github.com/aixigo/hal-http-client/issues/18): improved handling of optional relations
+    + NEW FEATURE: see ticket for details
 - [#14](https://github.com/aixigo/hal-http-client/issues/14): added missing api doc for `options.vars`
 - [#17](https://github.com/aixigo/hal-http-client/issues/17): added static selfLink convenience function
 - [#1](https://github.com/aixigo/hal-http-client/issues/1): templated URLs: using url-template for variable substitution

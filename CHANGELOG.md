@@ -2,6 +2,9 @@
 
 ## Last Changes
 
+
+## v0.10.0
+
 - [#20](https://github.com/aixigo/hal-http-client/issues/20): implemented method and body support for fetch and fetchAll
     + NEW FEATURE: see ticket for details
 

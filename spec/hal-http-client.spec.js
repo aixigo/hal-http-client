@@ -425,6 +425,9 @@ describe( 'A hal client instance', () => {
          fetchMock.get( url( '/me/cars/1' ), { status: 200, body: data.CARS._embedded.car[ 1 ] } );
          fetchMock.get( url( '/me/pets' ), { status: 200, body: data.PETS } );
          fetchMock.get( url( '/me/pets/0' ), { status: 200, body: data.PETS._embedded.pet[ 0 ] } );
+         fetchMock.post( url( '/me/cars' ), { status: 201 } );
+         fetchMock.delete( url( '/me/cars/0' ), { status: 204 } );
+         fetchMock.delete( url( '/me/cars/1' ), { status: 204 } );
 
          spyOn( hal, 'follow' ).and.callThrough();
       } );
@@ -715,6 +718,41 @@ describe( 'A hal client instance', () => {
 
          expect( fetchMock.called( url( '/me/carsByTypeAndModel?type=Daimler%20Benz&model=T%201000%2B' ) ) )
             .toBe( true );
+      } );
+
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+      it( 'can follow a relation using the POST method with body (#20)', async () => {
+         const tesla = { type: 'Tesla', model: 'Roadster' };
+         await hal.follow( data.ROOT, 'cars', { method: 'POST', body: tesla } )
+            .then( thenResolvedSpy, thenRejectedSpy );
+
+         expect( fetchMock.lastUrl() ).toEqual( url( '/me/cars' ) );
+         expect( fetchMock.lastOptions().method ).toEqual( 'POST' );
+         expect( fetchMock.lastOptions().body ).toEqual( JSON.stringify( tesla ) );
+         expect( thenResolvedSpy ).toHaveBeenCalledWith( jasmine.objectContaining( { status: 201 } ) );
+      } );
+
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+      it( 'can followAll a relation using the POST method with body (#20)', async () => {
+         const body = { comment: 'Not needed anymore' };
+         await hal.followAll( data.CARS, 'car', { method: 'DELETE', body } )
+            .then( thenResolvedSpy, thenRejectedSpy );
+
+         const calls = fetchMock.calls().matched;
+         const urls = calls.map( ([ url ]) => url );
+         const options = calls.map( ([ , options ]) => options );
+         expect( calls.length ).toBe( 2 );
+         expect( urls ).toEqual( [ url( '/me/cars/0' ), url( '/me/cars/1' ) ] );
+         expect( options[ 0 ].method ).toEqual( 'DELETE' );
+         expect( options[ 1 ].method ).toEqual( 'DELETE' );
+         expect( options[ 0 ].body ).toEqual( JSON.stringify( body ) );
+         expect( options[ 1 ].body ).toEqual( JSON.stringify( body ) );
+         expect( thenResolvedSpy ).toHaveBeenCalledWith( [
+            jasmine.objectContaining( { status: 204 } ),
+            jasmine.objectContaining( { status: 204 } )
+         ] );
       } );
 
    } );

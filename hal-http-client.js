@@ -240,8 +240,8 @@ export function create( optionalOptions = {} ) {
     *
     * @param {String|Object} urlOrHalRepresentation
     *    an url or hal representation to make the request for
-    * @param {Object} data
-    *    JSON serializable data to send
+    * @param {Object} body
+    *    JSON serializable body to send
     * @param {Object} [optionalOptions]
     *    configuration to use for the request
     * @param {Object} [optionalOptions.headers]
@@ -257,8 +257,8 @@ export function create( optionalOptions = {} ) {
     *
     * @memberof HalHttpClient
     */
-   function put( urlOrHalRepresentation, data, optionalOptions ) {
-      return unsafeRequest( 'PUT', urlOrHalRepresentation, optionalOptions, data );
+   function put( urlOrHalRepresentation, body, optionalOptions ) {
+      return unsafeRequest( 'PUT', urlOrHalRepresentation, optionalOptions, body );
    }
 
    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -269,8 +269,8 @@ export function create( optionalOptions = {} ) {
     *
     * @param {String|Object} urlOrHalRepresentation
     *    an url or hal representation to make the request for
-    * @param {Object} data
-    *    JSON serializable data to send
+    * @param {Object} body
+    *    JSON serializable body to send
     * @param {Object} [optionalOptions]
     *    configuration to use for the request
     * @param {Object} [optionalOptions.headers]
@@ -286,8 +286,8 @@ export function create( optionalOptions = {} ) {
     *
     * @memberof HalHttpClient
     */
-   function post( urlOrHalRepresentation, data, optionalOptions ) {
-      return unsafeRequest( 'POST', urlOrHalRepresentation, optionalOptions, data );
+   function post( urlOrHalRepresentation, body, optionalOptions ) {
+      return unsafeRequest( 'POST', urlOrHalRepresentation, optionalOptions, body );
    }
 
    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -298,8 +298,8 @@ export function create( optionalOptions = {} ) {
     *
     * @param {String|Object} urlOrHalRepresentation
     *    an url or hal representation to make the request for
-    * @param {Object} data
-    *    data in JSON Patch notation (http://tools.ietf.org/html/rfc6902)
+    * @param {Object} body
+    *    body in JSON Patch notation (http://tools.ietf.org/html/rfc6902)
     * @param {Object} [optionalOptions]
     *    configuration to use for the request
     * @param {Object} [optionalOptions.headers]
@@ -315,8 +315,8 @@ export function create( optionalOptions = {} ) {
     *
     * @memberof HalHttpClient
     */
-   function patch( urlOrHalRepresentation, data, optionalOptions ) {
-      return unsafeRequest( 'PATCH', urlOrHalRepresentation, optionalOptions, data );
+   function patch( urlOrHalRepresentation, body, optionalOptions ) {
+      return unsafeRequest( 'PATCH', urlOrHalRepresentation, optionalOptions, body );
    }
 
    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -327,9 +327,9 @@ export function create( optionalOptions = {} ) {
     *
     * @param {String|Object} urlOrHalRepresentation
     *    an url or hal representation to make the request for
-    * @param {Object} [data]
-    *    JSON serializable data to send. If you want to use options, but have no `data`, use `undefined` as
-    *    value for `data`
+    * @param {Object} [body]
+    *    JSON serializable body to send. If you want to use options, but have no `body`, use `undefined` as
+    *    value for `body`
     * @param {Object} [optionalOptions]
     *    configuration to use for the request
     * @param {Object} [optionalOptions.headers]
@@ -345,8 +345,8 @@ export function create( optionalOptions = {} ) {
     *
     * @memberof HalHttpClient
     */
-   function del( urlOrHalRepresentation, data, optionalOptions ) {
-      return unsafeRequest( 'DELETE', urlOrHalRepresentation, optionalOptions, data );
+   function del( urlOrHalRepresentation, body, optionalOptions ) {
+      return unsafeRequest( 'DELETE', urlOrHalRepresentation, optionalOptions, body );
    }
 
    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -372,6 +372,11 @@ export function create( optionalOptions = {} ) {
     *    the relation to follow
     * @param {Object} [optionalOptions]
     *    configuration to use for the request
+    * @param {Object} [optionalOptions.method]
+    *    method to use for the request(s). If not `GET`, embedded representations will be ignored. Default is
+    *    `GET`
+    * @param {Object} [optionalOptions.body]
+    *    JSON serializable body to send
     * @param {Object} [optionalOptions.headers]
     *    headers to send along with the request. The same default headers as for `get()` are used
     * @param {Object} [optionalOptions.fetchInit]
@@ -394,11 +399,13 @@ export function create( optionalOptions = {} ) {
          headers: {},
          fetchInit: {},
          vars: {},
+         method: 'GET',
+         body: undefined,
          ...optionalOptions
       };
 
       return extendResponsePromise( new Promise( ( resolve, reject ) => {
-         if( '_embedded' in halRepresentation && relation in halRepresentation._embedded ) {
+         if( options.method === 'GET' && path( halRepresentation, `_embedded.${relation}` ) ) {
             const embedded = halRepresentation._embedded[ relation ];
             if( options.followAll ) {
                const all = Array.isArray( embedded ) ? embedded : [ embedded ];
@@ -419,20 +426,19 @@ export function create( optionalOptions = {} ) {
                } );
             }
          }
-         else if( '_links' in halRepresentation && relation in halRepresentation._links ) {
+         else if( path( halRepresentation, `_links.${relation}` ) ) {
             const linkOrLinks = halRepresentation._links[ relation ];
-            const getOptions = { headers: options.headers, fetchInit: options.fetchInit };
             if( options.followAll ) {
                const links = Array.isArray( linkOrLinks ) ? linkOrLinks : [ linkOrLinks ];
                allSettled( links.map( link => {
                   const href = expandPossibleVars( link, options.vars );
-                  return get( href, getOptions);
+                  return request( href );
                } ) ).then( resolve, reject );
             }
             else {
                const link = Array.isArray( linkOrLinks ) ? linkOrLinks[ 0 ] : linkOrLinks;
                const href = expandPossibleVars( link, options.vars );
-               get( href, getOptions ).then( resolve, reject );
+               request( href ).then( resolve, reject );
             }
          }
          else {
@@ -444,6 +450,15 @@ export function create( optionalOptions = {} ) {
             } );
          }
       } ) );
+
+      function request( href ) {
+         const requestOptions = { headers: options.headers, fetchInit: options.fetchInit };
+         const requestFunction = api[ options.method.toLowerCase() ];
+         if( [ 'DELETE', 'PATCH', 'POST', 'PUT' ].indexOf( options.method.toUpperCase() ) !== -1 ) {
+            return requestFunction( href, options.body, requestOptions );
+         }
+         return requestFunction( href, requestOptions );
+      }
    }
 
    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -458,6 +473,11 @@ export function create( optionalOptions = {} ) {
     *    the relation to follow
     * @param {Object} [optionalOptions]
     *    configuration to use for the request
+    * @param {Object} [optionalOptions.method]
+    *    method to use for the request(s). If not `GET`, embedded representations will be ignored. Default is
+    *    `GET`
+    * @param {Object} [optionalOptions.body]
+    *    JSON serializable body to send
     * @param {Object} [optionalOptions.headers]
     *    headers to send along with the request. The same default headers as for `get()` are used
     * @param {Object} [optionalOptions.fetchInit]
@@ -481,8 +501,8 @@ export function create( optionalOptions = {} ) {
    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
    /**
-    * Helper factory for `follow()` function calls. The returned function only expects a HAL representation in
-    * the data object, and calls {@link #HalHttpClient.follow()} using that representation as first argument.
+    * Helper factory for `follow()` function calls. The returned function only expects a HAL representation as
+    * argument, and calls {@link #HalHttpClient.follow()} using that representation as first argument.
     * The purpose of this method is the use within chained `follow()` calls, especially in `on` handlers.
     *
     * Example:
@@ -504,6 +524,11 @@ export function create( optionalOptions = {} ) {
     *    the relation to follow
     * @param {Object} [optionalOptions]
     *    configuration to use for the request
+    * @param {Object} [optionalOptions.method]
+    *    method to use for the request(s). If not `GET`, embedded representations will be ignored. Default is
+    *    `GET`
+    * @param {Object} [optionalOptions.body]
+    *    JSON serializable body to send
     * @param {Object} [optionalOptions.headers]
     *    headers to send along with the request. The same default headers as for `get()` are used
     * @param {Object} [optionalOptions.fetchInit]
@@ -519,8 +544,8 @@ export function create( optionalOptions = {} ) {
     * @memberof HalHttpClient
     */
    function thenFollow( relation, optionalOptions ) {
-      return function( data ) {
-         return follow( data, relation, optionalOptions );
+      return function( representation ) {
+         return follow( representation, relation, optionalOptions );
       };
    }
 
@@ -534,6 +559,11 @@ export function create( optionalOptions = {} ) {
     *    the relation to follow
     * @param {Object} [optionalOptions]
     *    configuration to use for the request
+    * @param {Object} [optionalOptions.method]
+    *    method to use for the request(s). If not `GET`, embedded representations will be ignored. Default is
+    *    `GET`
+    * @param {Object} [optionalOptions.body]
+    *    JSON serializable body to send
     * @param {Object} [optionalOptions.headers]
     *    headers to send along with the request. The same default headers as for `get()` are used
     * @param {Object} [optionalOptions.fetchInit]
@@ -547,15 +577,15 @@ export function create( optionalOptions = {} ) {
     * @memberof HalHttpClient
     */
    function thenFollowAll( relation, optionalOptions ) {
-      return function( data ) {
-         return followAll( data, relation, optionalOptions );
+      return function( representation ) {
+         return followAll( representation, relation, optionalOptions );
       };
    }
 
    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
    let continuationPromise;
-   function unsafeRequest( method, urlOrHalRepresentation, optionalOptions = {}, optionalData = {} ) {
+   function unsafeRequest( method, urlOrHalRepresentation, optionalOptions = {}, optionalBody = {} ) {
       const url = extractUrl( urlOrHalRepresentation );
       const options = {
          headers: {},
@@ -573,7 +603,7 @@ export function create( optionalOptions = {} ) {
       ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
       function next() {
-         return doFetch( url, options, method, optionalData ).then(
+         return doFetch( url, options, method, optionalBody ).then(
             response => globalOptions.responseTransformer( response ),
             response => Promise.reject( globalOptions.responseTransformer( response ) )
          );

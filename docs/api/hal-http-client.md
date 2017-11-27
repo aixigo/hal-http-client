@@ -211,7 +211,7 @@ for the request.
 | ---- | ----------- |
 | [`ResponsePromise`](#ResponsePromise) |  an extended promise for the response |
 
-#### <a id="HalHttpClient.put"></a>HalHttpClient.put( urlOrHalRepresentation, data, optionalOptions )
+#### <a id="HalHttpClient.put"></a>HalHttpClient.put( urlOrHalRepresentation, body, optionalOptions )
 
 Makes a PUT request for the given url or hal representation. In case a hal representation is given,
 the `self relation in the `_links` map is used to derive the url for the request.
@@ -221,7 +221,7 @@ the `self relation in the `_links` map is used to derive the url for the request
 | Property | Type | Description |
 | -------- | ---- | ----------- |
 | urlOrHalRepresentation | `String`, `Object` |  an url or hal representation to make the request for |
-| data | `Object` |  JSON serializable data to send |
+| body | `Object` |  JSON serializable body to send |
 | _optionalOptions_ | `Object` |  configuration to use for the request |
 | _optionalOptions.headers_ | `Object` |  headers to send along with the request. By default `Accept: application/hal+json` and `Content-Type: application/json` are added to the headers |
 | _optionalOptions.fetchInit_ | `Object` |  additional init options for `fetch` to be used for this request only. The keys `headers`, `body` and `method` are ignored from this option, since they are either parameters on their own or implemented as specific function. |
@@ -232,7 +232,7 @@ the `self relation in the `_links` map is used to derive the url for the request
 | ---- | ----------- |
 | [`ResponsePromise`](#ResponsePromise) |  an extended promise for the response |
 
-#### <a id="HalHttpClient.post"></a>HalHttpClient.post( urlOrHalRepresentation, data, optionalOptions )
+#### <a id="HalHttpClient.post"></a>HalHttpClient.post( urlOrHalRepresentation, body, optionalOptions )
 
 Makes a POST request for the given url or hal representation. In case a hal representation is given,
 the `self relation in the `_links` map is used to derive the url for the request.
@@ -242,7 +242,7 @@ the `self relation in the `_links` map is used to derive the url for the request
 | Property | Type | Description |
 | -------- | ---- | ----------- |
 | urlOrHalRepresentation | `String`, `Object` |  an url or hal representation to make the request for |
-| data | `Object` |  JSON serializable data to send |
+| body | `Object` |  JSON serializable body to send |
 | _optionalOptions_ | `Object` |  configuration to use for the request |
 | _optionalOptions.headers_ | `Object` |  headers to send along with the request. By default `Accept: application/hal+json` and `Content-Type: application/json` are added to the headers |
 | _optionalOptions.fetchInit_ | `Object` |  additional init options for `fetch` to be used for this request only. The keys `headers`, `body` and `method` are ignored from this option, since they are either parameters on their own or implemented as specific function. |
@@ -253,7 +253,7 @@ the `self relation in the `_links` map is used to derive the url for the request
 | ---- | ----------- |
 | [`ResponsePromise`](#ResponsePromise) |  an extended promise for the response |
 
-#### <a id="HalHttpClient.patch"></a>HalHttpClient.patch( urlOrHalRepresentation, data, optionalOptions )
+#### <a id="HalHttpClient.patch"></a>HalHttpClient.patch( urlOrHalRepresentation, body, optionalOptions )
 
 Makes a PATCH request for the given url or hal representation. In case a hal representation is given,
 the `self relation in the `_links` map is used to derive the url for the request.
@@ -263,7 +263,7 @@ the `self relation in the `_links` map is used to derive the url for the request
 | Property | Type | Description |
 | -------- | ---- | ----------- |
 | urlOrHalRepresentation | `String`, `Object` |  an url or hal representation to make the request for |
-| data | `Object` |  data in JSON Patch notation (http://tools.ietf.org/html/rfc6902) |
+| body | `Object` |  body in JSON Patch notation (http://tools.ietf.org/html/rfc6902) |
 | _optionalOptions_ | `Object` |  configuration to use for the request |
 | _optionalOptions.headers_ | `Object` |  headers to send along with the request. By default `Accept: application/hal+json` and `Content-Type: application/json-patch+json` are added to the headers |
 | _optionalOptions.fetchInit_ | `Object` |  additional init options for `fetch` to be used for this request only. The keys `headers`, `body` and `method` are ignored from this option, since they are either parameters on their own or implemented as specific function. |
@@ -274,7 +274,7 @@ the `self relation in the `_links` map is used to derive the url for the request
 | ---- | ----------- |
 | [`ResponsePromise`](#ResponsePromise) |  an extended promise for the response |
 
-#### <a id="HalHttpClient.del"></a>HalHttpClient.del( urlOrHalRepresentation, data, optionalOptions )
+#### <a id="HalHttpClient.del"></a>HalHttpClient.del( urlOrHalRepresentation, body, optionalOptions )
 
 Makes a DELETE request for the given url or hal representation. In case a hal representation is given,
 the `self relation in the `_links` map is used to derive the url for the request.
@@ -284,7 +284,7 @@ the `self relation in the `_links` map is used to derive the url for the request
 | Property | Type | Description |
 | -------- | ---- | ----------- |
 | urlOrHalRepresentation | `String`, `Object` |  an url or hal representation to make the request for |
-| _data_ | `Object` |  JSON serializable data to send. If you want to use options, but have no `data`, use `undefined` as value for `data` |
+| _body_ | `Object` |  JSON serializable body to send. If you want to use options, but have no `body`, use `undefined` as value for `body` |
 | _optionalOptions_ | `Object` |  configuration to use for the request |
 | _optionalOptions.headers_ | `Object` |  headers to send along with the request. By default `Accept: application/hal+json` and `Content-Type: application/json` are added to the headers |
 | _optionalOptions.fetchInit_ | `Object` |  additional init options for `fetch` to be used for this request only. The keys `headers`, `body` and `method` are ignored from this option, since they are either parameters on their own or implemented as specific function. |
@@ -318,6 +318,8 @@ called. This can be prevented, if a list resource always embeds the representati
 | halRepresentation | `Object` |  the representation whose relation should be followed |
 | relation | `String` |  the relation to follow |
 | _optionalOptions_ | `Object` |  configuration to use for the request |
+| _optionalOptions.method_ | `Object` |  method to use for the request(s). If not `GET`, embedded representations will be ignored. Default is `GET` |
+| _optionalOptions.body_ | `Object` |  JSON serializable body to send |
 | _optionalOptions.headers_ | `Object` |  headers to send along with the request. The same default headers as for `get()` are used |
 | _optionalOptions.fetchInit_ | `Object` |  additional init options for `fetch` to be used for this request only. The keys `headers`, `body` and `method` are ignored from this option, since they are either parameters on their own or implemented as specific function. |
 | _optionalOptions.followAll_ | `Boolean` |  if `true`, follows all entities found for that relation. Default is `false` |
@@ -341,6 +343,8 @@ A shortcut function for [`#HalHttpClient.follow()`](#HalHttpClient.follow) calle
 | halRepresentation | `Object` |  the representation whose relation should be followed |
 | relation | `String` |  the relation to follow |
 | _optionalOptions_ | `Object` |  configuration to use for the request |
+| _optionalOptions.method_ | `Object` |  method to use for the request(s). If not `GET`, embedded representations will be ignored. Default is `GET` |
+| _optionalOptions.body_ | `Object` |  JSON serializable body to send |
 | _optionalOptions.headers_ | `Object` |  headers to send along with the request. The same default headers as for `get()` are used |
 | _optionalOptions.fetchInit_ | `Object` |  additional init options for `fetch` to be used for this request only. The keys `headers`, `body` and `method` are ignored from this option, since they are either parameters on their own or implemented as specific function. |
 | _optionalOptions.vars_ | `Object` |  map of variables to replace in templated URLs |
@@ -353,8 +357,8 @@ A shortcut function for [`#HalHttpClient.follow()`](#HalHttpClient.follow) calle
 
 #### <a id="HalHttpClient.thenFollow"></a>HalHttpClient.thenFollow( relation, optionalOptions )
 
-Helper factory for `follow()` function calls. The returned function only expects a HAL representation in
-the data object, and calls [`#HalHttpClient.follow()`](#HalHttpClient.follow) using that representation as first argument.
+Helper factory for `follow()` function calls. The returned function only expects a HAL representation as
+argument, and calls [`#HalHttpClient.follow()`](#HalHttpClient.follow) using that representation as first argument.
 The purpose of this method is the use within chained `follow()` calls, especially in `on` handlers.
 
 Example:
@@ -378,6 +382,8 @@ an array of objects instead of only one object.
 | -------- | ---- | ----------- |
 | relation | `String` |  the relation to follow |
 | _optionalOptions_ | `Object` |  configuration to use for the request |
+| _optionalOptions.method_ | `Object` |  method to use for the request(s). If not `GET`, embedded representations will be ignored. Default is `GET` |
+| _optionalOptions.body_ | `Object` |  JSON serializable body to send |
 | _optionalOptions.headers_ | `Object` |  headers to send along with the request. The same default headers as for `get()` are used |
 | _optionalOptions.fetchInit_ | `Object` |  additional init options for `fetch` to be used for this request only. The keys `headers`, `body` and `method` are ignored from this option, since they are either parameters on their own or implemented as specific function. |
 | _optionalOptions.followAll_ | `Boolean` |  if `true`, follows all entities found for that relation. Default is `false` |
@@ -399,6 +405,8 @@ A shortcut function for [`#HalHttpClient.thenFollow()`](#HalHttpClient.thenFollo
 | -------- | ---- | ----------- |
 | relation | `String` |  the relation to follow |
 | _optionalOptions_ | `Object` |  configuration to use for the request |
+| _optionalOptions.method_ | `Object` |  method to use for the request(s). If not `GET`, embedded representations will be ignored. Default is `GET` |
+| _optionalOptions.body_ | `Object` |  JSON serializable body to send |
 | _optionalOptions.headers_ | `Object` |  headers to send along with the request. The same default headers as for `get()` are used |
 | _optionalOptions.fetchInit_ | `Object` |  additional init options for `fetch` to be used for this request only. The keys `headers`, `body` and `method` are ignored from this option, since they are either parameters on their own or implemented as specific function. |
 

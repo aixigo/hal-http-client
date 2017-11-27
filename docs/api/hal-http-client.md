@@ -274,7 +274,7 @@ the `self relation in the `_links` map is used to derive the url for the request
 | ---- | ----------- |
 | [`ResponsePromise`](#ResponsePromise) |  an extended promise for the response |
 
-#### <a id="HalHttpClient.del"></a>HalHttpClient.del( urlOrHalRepresentation, optionalOptions )
+#### <a id="HalHttpClient.del"></a>HalHttpClient.del( urlOrHalRepresentation, data, optionalOptions )
 
 Makes a DELETE request for the given url or hal representation. In case a hal representation is given,
 the `self relation in the `_links` map is used to derive the url for the request.
@@ -284,6 +284,7 @@ the `self relation in the `_links` map is used to derive the url for the request
 | Property | Type | Description |
 | -------- | ---- | ----------- |
 | urlOrHalRepresentation | `String`, `Object` |  an url or hal representation to make the request for |
+| _data_ | `Object` |  JSON serializable data to send. If you want to use options, but have no `data`, use `undefined` as value for `data` |
 | _optionalOptions_ | `Object` |  configuration to use for the request |
 | _optionalOptions.headers_ | `Object` |  headers to send along with the request. By default `Accept: application/hal+json` and `Content-Type: application/json` are added to the headers |
 | _optionalOptions.fetchInit_ | `Object` |  additional init options for `fetch` to be used for this request only. The keys `headers`, `body` and `method` are ignored from this option, since they are either parameters on their own or implemented as specific function. |

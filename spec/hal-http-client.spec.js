@@ -351,9 +351,7 @@ describe( 'A hal client instance', () => {
                headers: { 'X-Custom-Header': 'such header' },
                fetchInit: { cache: 'reload' }
             };
-            const promise = method === 'DELETE' ?
-               hal[ method.toLowerCase() ]( url( '/resource' ), options ) :
-               hal[ method.toLowerCase() ]( url( '/resource' ), { my: 'data' }, options );
+            const promise = hal[ method.toLowerCase() ]( url( '/resource' ), { my: 'data' }, options );
 
             promise.then( thenResolvedSpy, thenRejectedSpy );
             await promise.on( {
@@ -405,11 +403,9 @@ describe( 'A hal client instance', () => {
 
          /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-         if( method !== 'DELETE' ) {
-            it( 'sends the data as stringified request body', () => {
-               expect( fetchMock.lastOptions().body ).toEqual( JSON.stringify( { my: 'data' } ) );
-            } );
-         }
+         it( 'sends the data as stringified request body', () => {
+            expect( fetchMock.lastOptions().body ).toEqual( JSON.stringify( { my: 'data' } ) );
+         } );
 
       } );
 

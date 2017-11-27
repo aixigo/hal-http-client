@@ -2,6 +2,9 @@
 
 ## Last Changes
 
+- [#19](https://github.com/aixigo/hal-http-client/issues/19): del: added support for request body
+    + **BREAKING CHANGE:** see ticket for details
+
 
 ## v0.8.0
 

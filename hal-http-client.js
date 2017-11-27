@@ -327,6 +327,9 @@ export function create( optionalOptions = {} ) {
     *
     * @param {String|Object} urlOrHalRepresentation
     *    an url or hal representation to make the request for
+    * @param {Object} [data]
+    *    JSON serializable data to send. If you want to use options, but have no `data`, use `undefined` as
+    *    value for `data`
     * @param {Object} [optionalOptions]
     *    configuration to use for the request
     * @param {Object} [optionalOptions.headers]
@@ -342,8 +345,8 @@ export function create( optionalOptions = {} ) {
     *
     * @memberof HalHttpClient
     */
-   function del( urlOrHalRepresentation, optionalOptions ) {
-      return unsafeRequest( 'DELETE', urlOrHalRepresentation, optionalOptions );
+   function del( urlOrHalRepresentation, data, optionalOptions ) {
+      return unsafeRequest( 'DELETE', urlOrHalRepresentation, optionalOptions, data );
    }
 
    ///////////////////////////////////////////////////////////////////////////////////////////////////////////

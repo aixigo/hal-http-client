@@ -2,6 +2,9 @@
 
 ## Last Changes
 
+
+## v0.11.0
+
 - [#21](https://github.com/aixigo/hal-http-client/issues/21): accept `application/json` in addition to `application/hal+json` (but prefer HAL) and recover from non-JSON responses
     + NEW FEATURE: see ticket for details
 

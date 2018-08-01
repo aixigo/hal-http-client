@@ -172,7 +172,7 @@ describe( 'A hal client instance', () => {
 
       it( 'sends default safe, global and local headers along', () => {
          expect( fetchMock.lastOptions().headers ).toEqual( {
-            'accept': 'application/hal+json',
+            'accept': 'application/hal+json, application/json;q=0.8',
             'accept-language': 'de',
             'x-custom-header': 'such header'
          } );
@@ -189,10 +189,10 @@ describe( 'A hal client instance', () => {
 
    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-   describe( 'on failed GET with error 404', () => {
+   describe( 'on failed GET with error 404 with JSON content', () => {
 
       beforeEach( async () => {
-         fetchMock.get( url( '/resource' ), { status: 404 } );
+         fetchMock.get( url( '/resource' ), { status: 404, body: '{ "message": "totally not found" }' } );
          const promise = hal.get( url( '/resource' ) );
          promise.then( thenResolvedSpy, thenRejectedSpy );
          await promise.on( {
@@ -214,7 +214,40 @@ describe( 'A hal client instance', () => {
       it( 'calls the most specific matching on handler', () => {
          expect( onSpy200 ).not.toHaveBeenCalled();
          expect( onSpy2xx ).not.toHaveBeenCalled();
-         expect( onSpy404 ).toHaveBeenCalled();
+         expect( onSpy404 ).toHaveBeenCalledWith( { message: 'totally not found' }, jasmine.any( Object ) );
+         expect( onSpy5xxGlobal ).not.toHaveBeenCalled();
+      } );
+
+   } );
+
+   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+   describe( 'on failed GET with error 404 with non-JSON content', () => {
+
+      beforeEach( async () => {
+         fetchMock.get( url( '/resource' ), { status: 404, body: '<h1>NOT FOUND</h1>' } );
+         const promise = hal.get( url( '/resource' ) );
+         promise.then( thenResolvedSpy, thenRejectedSpy );
+         await promise.on( {
+            '200': onSpy200,
+            '2xx': onSpy2xx,
+            '404': onSpy404
+         } );
+      } );
+
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+      it( 'resolves the simple promise', () => {
+         expect( thenResolvedSpy ).toHaveBeenCalled();
+         expect( thenRejectedSpy ).not.toHaveBeenCalled();
+      } );
+
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+      it( 'calls the most specific matching on handler', () => {
+         expect( onSpy200 ).not.toHaveBeenCalled();
+         expect( onSpy2xx ).not.toHaveBeenCalled();
+         expect( onSpy404 ).toHaveBeenCalledWith( null, jasmine.any( Object ) );
          expect( onSpy5xxGlobal ).not.toHaveBeenCalled();
       } );
 
@@ -387,7 +420,7 @@ describe( 'A hal client instance', () => {
 
          it( 'sends default unsafe, global and local headers along', () => {
             expect( fetchMock.lastOptions().headers ).toEqual( {
-               'accept': 'application/hal+json',
+               'accept': 'application/hal+json, application/json;q=0.8',
                'accept-language': 'de',
                'content-type': method === 'PATCH' ? 'application/json-patch+json' : 'application/json',
                'x-custom-header': 'such header'
@@ -521,7 +554,7 @@ describe( 'A hal client instance', () => {
 
          expect( fetchMock.called( url( '/me/pets/0' ) ) ).toBe( true );
          expect( fetchMock.lastOptions( url( '/me/pets/0' ) ).headers ).toEqual( {
-            'accept': 'application/hal+json',
+            'accept': 'application/hal+json, application/json;q=0.8',
             'accept-language': 'de',
             'x-more-headers': 'yay'
          } );

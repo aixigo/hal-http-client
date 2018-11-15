@@ -808,11 +808,15 @@ describe( 'A hal client instance', () => {
          const firstRequest = hal.post( 'first', {} );
          hal.post( 'second', {} );
 
+         // fetchMock is called asyncronously
+         await Promise.resolve();
          expect( fetchMock.called( 'first' ) ).toBe( true );
          expect( fetchMock.called( 'second' ) ).toBe( false );
 
          await firstRequest;
 
+         // fetchMock is called asyncronously
+         await Promise.resolve();
          expect( fetchMock.called( 'second' ) ).toBe( true );
       } );
 
@@ -822,14 +826,161 @@ describe( 'A hal client instance', () => {
          const firstRequest = hal.post( 'firstFails', {} );
          hal.post( 'second', {} );
 
+         // fetchMock is called asyncronously
+         await Promise.resolve();
          expect( fetchMock.called( 'firstFails' ) ).toBe( true );
          expect( fetchMock.called( 'second' ) ).toBe( false );
 
          await firstRequest.catch( () => {} );
 
+         // fetchMock is called asyncronously
+         await Promise.resolve();
          expect( fetchMock.called( 'second' ) ).toBe( true );
       } );
 
    } );
 
+   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+   describe( 'configured with request middleware', () => {
+
+      let thisIsMiddleware;
+      let order;
+
+      beforeEach( async () => {
+         fetchMock.post( 'first', { status: 400 } );
+         fetchMock.get( 'first--changed-by-A', { status: 400 } );
+         fetchMock.get( 'first--changed-by-B--changed-by-A', { status: 400 } );
+         fetchMock.get( 'first--changed-by-A--changed-by-B', { status: 204 } );
+         order = [];
+
+         const middlewareA = {
+            request( { url, init } ) {
+               thisIsMiddleware = this === middlewareA;
+               order.push( 'A' );
+               return {
+                  url: `${url}--changed-by-A`,
+                  init: Object.assign( {}, init, { method: 'GET' } )
+               };
+            }
+         };
+
+         const middlewareB = {
+            async request( { url, init }) {
+               order.push( 'B' );
+               await delay(50);
+               return ({ url: `${url}--changed-by-B`, init });
+            }
+         };
+
+         hal = halHttp.create( { middlewares: [ middlewareA, middlewareB ] } );
+      } );
+
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+      it( 'calls the request processor as a method on the middleware', async () => {
+         await hal.post( 'first', {} );
+         expect( thisIsMiddleware ).toBe( true );
+      } );
+
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+      it( 'calls the request processors of the configured middleware in order of config', async () => {
+         await hal.post( 'first', {} );
+         expect( order ).toEqual( [ 'A', 'B' ] );
+      } );
+
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+      it( 'applies the request modifications from left to right', async () => {
+         const result = await hal.post( 'first', {} );
+
+         expect( fetchMock.called( 'first' ) ).toBe( false );
+         expect( fetchMock.called( 'first--changed-by-A' ) ).toBe( false );
+         expect( fetchMock.called( 'first--changed-by-B--changed-by-A' ) ).toBe( false );
+
+         expect( fetchMock.called( 'first--changed-by-A--changed-by-B' ) ).toBe( true );
+         expect( result.status ).toBe( 204 );
+      } );
+
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+      it( 'applies the request modifications asynchronlously', async () => {
+         const result = hal.post( 'first', {} );
+         await delay( 10 );
+         expect( fetchMock.called( 'first--changed-by-A--changed-by-B' ) ).toBe( false );
+         await result;
+         expect( fetchMock.called( 'first--changed-by-A--changed-by-B' ) ).toBe( true );
+      } );
+
+      function delay( ms ) {
+         return new Promise( resolve => {
+            setTimeout( resolve, ms );
+         } );
+      }
+   } );
+
+   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+   describe( 'configured with response middleware', () => {
+
+      let thisIsMiddleware;
+      let order;
+
+      beforeEach( async () => {
+         fetchMock.post( 'first', { status: 204 } );
+         fetchMock.get( '/b', { status: 202, body: 'Body-B' } );
+         order = [];
+
+         const middlewareA = {
+            response( { response, url, init } ) {
+               thisIsMiddleware = this === middlewareA;
+               order.push( 'A' );
+               response.status = 418;
+               return { response, url, init };
+            }
+         };
+
+         const middlewareB = {
+            async response({ url, init }) {
+               order.push( 'B' );
+               return {
+                  response: await fetch('/b'),
+                  url: `${url}--changed-by-A`,
+                  init: Object.assign({}, init, { method: 'GET' })
+               };
+            }
+         };
+
+         hal = halHttp.create( { middlewares: [ middlewareA, middlewareB ] } );
+      } );
+
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+      it( 'calls the response processor as a method on the middleware', async () => {
+         await hal.post( 'first', {} );
+         expect( thisIsMiddleware ).toBe( true );
+      } );
+
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+      it( 'calls the response processors of the configured middlewares in reverse order', async () => {
+         await hal.post( 'first', {} );
+         expect( order ).toEqual( [ 'B', 'A' ] );
+      } );
+
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+      it( 'applies the response modifications async from left to right', async () => {
+         const response = await hal.post( 'first', {} );
+
+         expect( fetchMock.called( 'first' ) ).toBe( true );
+         expect( fetchMock.called( '/b' ) ).toBe( true );
+
+         expect( response.status ).toBe( 418 );
+         const b = await response.text();
+         expect( b ).toEqual( 'Body-B' );
+      } );
+
+   } );
 } );

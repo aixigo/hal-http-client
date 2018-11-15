@@ -2,6 +2,9 @@
 
 ## Last Changes
 
+
+## v0.12.0-beta.0
+
 - [#22](https://github.com/aixigo/hal-http-client/issues/22): add middleware support
     + NEW FEATURE: see ticket for details
 

@@ -1,6 +1,6 @@
 {
    "name": "hal-http-client",
-   "version": "0.12.0-beta.0",
+   "version": "0.12.0",
    "description": "A status code driven JSON HAL HTTP client based on the fetch API.",
    "main": "dist/hal-http-client.js",
    "scripts": {
@@ -37,7 +37,7 @@
       "eslint-config-laxarjs": "^0.3.0",
       "fetch-mock": "^5.9.3",
       "jasmine-es6": "^0.4.0",
-      "laxar-dox": "^2.0.0-rc.0",
+      "laxar-dox": "^2.1.1",
       "watch": "^1.0.1"
    },
    "dependencies": {

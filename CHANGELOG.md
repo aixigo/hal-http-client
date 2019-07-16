@@ -3,6 +3,11 @@
 ## Last Changes
 
 
+## v0.12.1
+
+- [#28](https://github.com/aixigo/hal-http-client/issues/22): Update vulnerable dependencies
+
+
 ## v0.12.0
 ## v0.12.0-beta.0
 
